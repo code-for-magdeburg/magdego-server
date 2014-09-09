@@ -1,10 +1,12 @@
+var cfg = require('./config').Config;
+
 var express = require('express');
 var bodyParser = require('body-parser')
 var http = require('http');
 
 // connect to mongo db
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect('mongodb://' + cfg.mongodb_host + '/' + cfg.mongodb_name);
 var db = mongoose.connection;
 
 db.on('error', function (err) {
@@ -46,11 +48,11 @@ router.get('/:id', function (req, res) {
   });
 });
 
-router.get('/find/:long/:lat', function (req, res) {
+router.get('/find/:lng/:lat', function (req, res) {
   var lat = parseFloat(req.params.lat);
-  var long = parseFloat(req.params.long);
+  var lng = parseFloat(req.params.lng);
 
-  var nearPoint = {type: "Point", coordinates: [long, lat] };
+  var nearPoint = {type: "Point", coordinates: [lng, lat] };
   console.log(nearPoint);
 
   Station.aggregate(
@@ -58,7 +60,7 @@ router.get('/find/:long/:lat', function (req, res) {
       near: nearPoint,
       distanceField: "dist.calculated",
       includeLocs: "dist.location",
-      num: 5,
+      num: cfg.num_nearest_stations,
       spherical: true
     }
   }], function (err, result) {
@@ -85,7 +87,7 @@ var shutdown = function () {
 };
 
 if (require.main === module) {
-  boot(3000);
+  boot(cfg.port);
 } else {
   exports.boot = boot;
   exports.shutdown = shutdown;
