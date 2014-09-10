@@ -4,6 +4,8 @@ var express = require('express');
 var bodyParser = require('body-parser')
 var http = require('http');
 
+var departure = require('./departure');
+
 // connect to mongo db
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://' + cfg.mongodb_host + '/' + cfg.mongodb_name);
@@ -48,11 +50,11 @@ router.get('/:id', function (req, res) {
   });
 });
 
-router.get('/find/:lng/:lat', function (req, res) {
+router.get('/find/:long/:lat', function (req, res) {
   var lat = parseFloat(req.params.lat);
-  var lng = parseFloat(req.params.lng);
+  var long = parseFloat(req.params.long);
 
-  var nearPoint = {type: "Point", coordinates: [lng, lat] };
+  var nearPoint = {type: "Point", coordinates: [long, lat] };
   console.log(nearPoint);
 
   Station.aggregate(
@@ -60,19 +62,29 @@ router.get('/find/:lng/:lat', function (req, res) {
       near: nearPoint,
       distanceField: "dist.calculated",
       includeLocs: "dist.location",
-      num: cfg.num_nearest_stations,
+      num: 5,
       spherical: true
     }
   }], function (err, result) {
     if (err) {
-      console.log("error aggregating: " + err);
+      console.log("error aggregating: " + err.stack);
     } else {
-      res.json(result);
+      var deptimes = [];
+
+      result.forEach(function (val, index, array) {
+        departure.get_departure_times(function (error, result) {
+          if (error) {
+            // TODO: error handling...
+          } else {
+            deptimes[index] = result;
+          }
+        });
+      });
+
+      res.json(deptimes);
       res.end();
     }
   });
-
-
 });
 
 app.use('/station', router);

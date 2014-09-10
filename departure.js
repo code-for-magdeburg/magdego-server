@@ -1,9 +1,9 @@
 var QUERY_MVB_PATH = 'http://www.movi.de/mvb/fgi2/index.php?send_request=yes&refnr_stationname=%s||| &day=%s&month=%s&year=%s&hour=%s&min=%s&nextTime=120'
 
-var http = require('http');
+var request = require('request');
 var util = require('util');
 var cheerio = require('cheerio');
-var iconv = require('iconv-lite');
+var iconv = require('iconv');
 
 var get_departure_times = function (id, callback) {
   var current_date = new Date();
@@ -15,37 +15,36 @@ var get_departure_times = function (id, callback) {
     current_date.getHours(),
     current_date.getMinutes());
 
-  http.get(path, function (res) {
+  request(path, {encoding: null}, function (err, resp, body) {
+    if (err) {
+      callback(err, null);
+    } else {
+      var converter = iconv.Iconv('iso-8859-1', 'utf-8');
+      var buf = converter.convert(body);
+      body = buf.toString('utf-8');
 
-    if (res == null) {
-      callback("get request failed", null);
-    }
-
-    var convert_stream = iconv.decodeStream('ISO-8859-1');
-    res.pipe(convert_stream);
-
-    // get raw html
-    var body = '';
-
-    res.on('data', function (chunk) {
-      body += chunk;
-    });
-
-    res.on('end', function () {
       var $ = cheerio.load(body);
-      var row = $(".abfahrtszeiten tr:not(first-child)");
+      var row = $(".abfahrtszeiten tr:not(:first-child)");
       var times = [];
 
       row.each(function (i, elem) {
+        var line = $(elem).find('.linie').text();
+        var direction = $(elem).find('.richtung').text();
+        var departure = $(elem).find('.abfahrtsoll').text();
+
+        if (departure === '') {
+          departure = $(elem).find('.abfahrtlive').text().slice(0,-1);
+        }
+
         times[i] = {
-          "line:": $(elem).find('.linie').text(),
-          "direction": $(elem).find('.richtung').text(),
-          "departure": $(elem).find('.abfahrtsoll').text()
+          "line:": line,
+          "direction": direction,
+          "departure": departure
         };
       });
 
-      console.log(times);
-    });
+      callback(null, times);
+    }
   });
 };
 
