@@ -23,7 +23,7 @@ var stationSchema = mongoose.Schema({
   id: Number,
   name: String,
   location: {
-    type: String,
+    type: {type: String},
     coordinates: [Number, Number]
   }
 });
@@ -44,12 +44,12 @@ router.get('/', function (req, res) {
 });
 
 router.get('/stations', function (req, res) {
-  Station.find({}, function (err, stations) {
+  Station.find({}).exec(function (err, stations) {
     if (err) {
       res.status(500).json({error: 'couldn\'d find stations'});
       res.end();
     } else {
-      res.json(JSON.stringify(stations));
+      res.json(stations);
       res.end();
     }
   });
@@ -70,7 +70,7 @@ router.get('/departure-time/station/:id', function (req, res) {
             res.status(500).json({error: "coudn't get departure times"});
             res.end();
           } else {
-            res.json(JSON.stringify(result));
+            res.json(result);
             res.end();
           }
         });
@@ -108,7 +108,7 @@ router.get('/departure-time/location/:long/:lat', function (req, res) {
           res.status(500).json({error: "getting departure times failed"});
           res.end();
         } else {
-          res.json(JSON.stringify(departureTimes));
+          res.json(departureTimes);
           res.end();
         }
       })
