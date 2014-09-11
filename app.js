@@ -49,7 +49,7 @@ router.get('/stations', function (req, res) {
       res.status(500).json({error: 'couldn\'d find stations'});
       res.end();
     } else {
-      res.json(stations);
+      res.json(JSON.stringify(stations));
       res.end();
     }
   });
@@ -70,7 +70,7 @@ router.get('/departure-time/station/:id', function (req, res) {
             res.status(500).json({error: "coudn't get departure times"});
             res.end();
           } else {
-            res.json(result);
+            res.json(JSON.stringify(result));
             res.end();
           }
         });
@@ -108,7 +108,7 @@ router.get('/departure-time/location/:long/:lat', function (req, res) {
           res.status(500).json({error: "getting departure times failed"});
           res.end();
         } else {
-          res.json(departureTimes);
+          res.json(JSON.stringify(departureTimes));
           res.end();
         }
       })
