@@ -9,6 +9,7 @@
     "body-parser": "1.7.0",
     "mongoose": "3.8.16",
     "iconv": "2.1.4",
-    "request": "2.42.0"
+    "request": "2.42.0",
+    "async": "0.9.0"
   }
 }
