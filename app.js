@@ -38,6 +38,11 @@ app.use(bodyParser.json());
 
 var router = express.Router();
 
+router.get('/', function (req, res) {
+  res.write("Hallo Steffi!");
+  res.end();
+});
+
 router.get('/stations', function (req, res) {
   Station.find({}, function (err, stations) {
     if (err) {

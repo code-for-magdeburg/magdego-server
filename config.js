@@ -11,7 +11,7 @@ var development = {
 
 var production = {
   mongodb_host: 'localhost',
-  mongodb_database: 'test',
+  mongodb_database: 'magdego',
 
   port: 80,
 
