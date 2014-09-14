@@ -38,7 +38,7 @@ var get_departure_times = function (id, callback) {
         }
 
         times[i] = {
-          "line:": line,
+          "line": line,
           "direction": direction,
           "departure": departure
         };
