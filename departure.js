@@ -24,7 +24,7 @@ var get_departure_times = function (id, callback) {
       body = buf.toString('utf-8');
 
       var $ = cheerio.load(body);
-      var row = $(".abfahrtszeiten tr:not(:first-child)");
+      var row = $(".abfahrtszeiten tbody tr:not(:first-child)");
       var times = [];
 
       row.each(function (i, elem) {
