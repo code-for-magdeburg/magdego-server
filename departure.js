@@ -9,9 +9,9 @@ var get_departure_times = function (id, callback) {
   var current_date = new Date();
   var path = util.format(QUERY_MVB_PATH,
     id,
-    current_date.getDay(),
-    current_date.getMonth(),
-    current_date.getYear(),
+    current_date.getDate(),
+    current_date.getMonth()+1,
+    current_date.getFullYear(),
     current_date.getHours(),
     current_date.getMinutes());
 
@@ -24,7 +24,8 @@ var get_departure_times = function (id, callback) {
       body = buf.toString('utf-8');
 
       var $ = cheerio.load(body);
-      var row = $(".abfahrtszeiten tbody tr:not(:first-child)");
+      var row = $(".abfahrtszeiten tr:not(:first-child)");
+
       var times = [];
 
       row.each(function (i, elem) {
