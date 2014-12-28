@@ -7,28 +7,7 @@ var http = require('http');
 var departure = require('./departure');
 var async = require('async');
 
-// connect to mongo db
-var mongoose = require('mongoose');
-var connection_string = 'mongodb://' + cfg.mongodb_host + '/' + cfg.mongodb_database;
-// console.log(connection_string);
-mongoose.connect(connection_string);
-var db = mongoose.connection;
 
-db.on('error', function (err) {
-  console.log(err);
-});
-
-// create db schema
-var stationSchema = mongoose.Schema({
-  id: Number,
-  name: String,
-  location: {
-    type: {type: String},
-    coordinates: [Number, Number]
-  }
-});
-
-var Station = mongoose.model('Station', stationSchema);
 
 // setup app routes
 var app = express();
@@ -41,42 +20,6 @@ var router = express.Router();
 router.get('/', function (req, res) {
   res.write("Hallo Steffi!");
   res.end();
-});
-
-router.get('/stations', function (req, res) {
-  Station.find({}).exec(function (err, stations) {
-    if (err) {
-      res.status(500).json({error: 'couldn\'d find stations'});
-      res.end();
-    } else {
-      res.json(stations);
-      res.end();
-    }
-  });
-});
-
-router.get('/departure-time/station/:id', function (req, res) {
-  Station.findOne({id: req.params.id}, function (err, station) {
-    if (err) {
-      res.status(500).json({error: 'internal error'});
-      res.end();
-    } else {
-      if (station === null) {
-        res.status(404).json({error: 'station not found'});
-        res.end();
-      } else {
-        departure.get_departure_times(req.params.id, function (err, result) {
-          if (err) {
-            res.status(500).json({error: "coudn't get departure times"});
-            res.end();
-          } else {
-            res.json(result);
-            res.end();
-          }
-        });
-      }
-    }
-  });
 });
 
 router.get('/departure-time/location/:long/:lat', function (req, res) {

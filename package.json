@@ -7,7 +7,6 @@
     "cheerio": "0.17.0",
     "express": "4.8.7",
     "body-parser": "1.7.0",
-    "mongoose": "3.8.16",
     "iconv": "2.1.4",
     "request": "2.42.0",
     "async": "0.9.0"
