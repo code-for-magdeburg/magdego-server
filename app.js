@@ -5,9 +5,6 @@ var bodyParser = require('body-parser')
 var http = require('http');
 
 var departure = require('./departure');
-var async = require('async');
-
-
 
 // setup app routes
 var app = express();
@@ -23,52 +20,15 @@ router.get('/', function (req, res) {
 });
 
 router.get('/departure-time/location/:long/:lat', function (req, res) {
-  var lat = parseFloat(req.params.lat);
-  var long = parseFloat(req.params.long);
-
-  var nearPoint = {type: "Point", coordinates: [long, lat] };
-
-  // query departure times from MVB
-  var departureMapper = function (station, callback) {
-    departure.get_departure_times(station.id, function (err, result) {
-      // console.log(station.name + ": " + station.dist.calculated + " (" + station.location.coordinates + ")");
-      if (err) {
-        callback(err, null);
-      } else {
-        callback(null, { station_info: station, departure_times: result });
-      }
-    });
-  }
-
-  // mapping stations to departure times
-  var stationMapper = function (err, stations) {
+  departure.get_departure_times(req.params.lat, req.params.long, function (err, result) {
     if (err) {
-      res.status(500).json({error: "finding close stations failed"});
+      res.status(500).json({error: "coudn't get departure times"});
       res.end();
     } else {
-      async.map(stations, departureMapper, function (err, departureTimes) {
-        if (err) {
-          res.status(500).json({error: "getting departure times failed"});
-          res.end();
-        } else {
-          res.json(departureTimes);
-          res.end();
-        }
-      })
+      res.json(result);
+      res.end();
     }
-  }
-
-  Station.aggregate([
-    {
-      $geoNear: {
-        near: nearPoint,
-        distanceField: "dist.calculated",
-        includeLocs: "dist.location",
-        num: 5,
-        spherical: true
-      }
-    }
-  ], stationMapper);
+  });
 });
 
 app.use('/', router);
