@@ -1,19 +1,47 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Geolocation</title>
+    <title>MagdeGo</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <style>
       html, body{
         height: 100%;
         margin: 0px;
-        padding: 0px
+        padding: 0px;
+        text-align: center;
       }
+
+      table {
+        margin:0 auto;
+      }
+
+      tr td:first-child {
+        text-align: left;
+      }
+
+      tr td:nth-child(3) {
+        text-align: right;
+      }
+
+      td {
+        padding: 0 0.5em;
+      }
+
+      h1 {
+        color: #1ABC9C;
+        margin: 1em;
+      }
+
+      #link {
+        color: #1ABC9C;
+        text-decoration: none;
+        text-align: center;
+      }
+
     </style>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.3/jquery.mobile.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.3/jquery.mobile.min.js"></script>
 
@@ -27,6 +55,8 @@
 
             var URI = 'http://localhost:3000/departure-time/location/'
             var path = URI + long + '/' + lat;
+
+            console.log(path);
 
             jQuery.getJSON( path, fillContent);
 
@@ -45,29 +75,120 @@
         } else {
           var content = 'Error: Your browser doesn\'t support geolocation.';
         }
-        $('body').text(content);
+        $('div').text(content);
       }
 
       var pages = [];
+      var currentIndex = 0;
 
       function fillContent(data, textStatus, jqXHR) {
-        departures = data;
+          pages = data;
 
-        $('div').text(data);
+          if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+            printTH();
+            changePage(0);
 
-        for (i = 0; i < data.length; i++) {
+            $('div').on("swiperight", goRight);
+            $('div').on("swipeleft", goLeft);
+          } 
+          else {
+            printAll();
+          }
+      }
 
+      function goRight() {
+
+          currentIndex++;
+          if ( currentIndex >= pages.length ) {
+            currentIndex = 0;
+          }
+          changePage();
+      }
+
+      function goLeft() {
+
+          currentIndex--;
+          if ( currentIndex < 0 ) {
+            currentIndex = pages.length - 1;
+          }
+          changePage();
+      }
+
+      function changePage() {
+        // console.log(currentIndex);
+
+        var station = pages[currentIndex];
+
+        $('h1').text(station.station_info);
+
+        var lines = pages[currentIndex].departure_times;
+
+        $('table tr + tr').remove();
+
+        // console.log(lines);
+
+        for (i = 0; i < lines.length; i++) {
+          fillLine(lines[i]);
         }
+      }
+
+      function fillLine(line) {
+        $('table:last-child').append('<tr><td>' + line.line +'</td><td>' + line.direction +'</td><td>' + line.departure + '</td></tr>');
+      }
+
+      function printAll() {
+        $('table').remove();
+        $('h1').remove();
+
+        // console.log(pages);
+
+        for(i = 0; i < pages.length; i++) {
+
+            // console.log(i);
+
+            var page = pages[i];
+            $('div').append('<h1>'+ page.station_info +'</h1>');
+            $('div').append('<table></table>');
+            printTH();
+
+            var lines = page.departure_times;
+
+            // console.log('lines');
+            // console.log(lines);
+
+            if ( typeof lines !== 'undefined' ) {
+              for(ii = 0; ii < lines.length; ii++) {
+                fillLine(lines[ii]);
+              }
+            }
+        }
+      }
+
+      function printTH() {
+        console.log('Called');
+        $('table:last-child').append('<thead><tr> <th>Linie</th> <th>Richtung</th> <th>Abfahrtszeit</th> </tr></thead>');
+        console.log('success');
       }
 
       $(function() {
         initialize();
       });
+
+      
+
     </script>
+
   </head>
   <body>
+    <header>
+      <a id="link" href="wewe">Infos & Impressum</a>
+    </header>
+
     <div>
-      
+      <h1>Loading...</h1>
+      <table>
+
+      </table>
     </div>
   </body>
 </html>

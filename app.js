@@ -19,7 +19,7 @@ router.get('/', function (req, res) {
 });
 
 router.get('/departure-time/location/:long/:lat', function (req, res) {
-  departure.get_departure_times(req.params.lat, req.params.long, function (err, result) {
+  departure.get_departure_times(req.params.long, req.params.lat, function (err, result) {
     if (err) {
       res.status(500).json({error: "coudn't get departure times"});
       res.end();
