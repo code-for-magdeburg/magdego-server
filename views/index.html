@@ -86,7 +86,7 @@
 
           if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
             printTH();
-            changePage(0);
+            changePage();
 
             $('div').on("swiperight", goRight);
             $('div').on("swipeleft", goLeft);
@@ -117,18 +117,19 @@
       function changePage() {
         // console.log(currentIndex);
 
-        var station = pages[currentIndex];
+        if ( typeof pages[currentIndex].station_info !== 'undefined') { // FIX THIS
 
-        $('h1').text(station.station_info);
+          var station = pages[currentIndex];
+          $('h1').text(station.station_info);
+          var lines = pages[currentIndex].departure_times;
 
-        var lines = pages[currentIndex].departure_times;
+          $('table tr + tr').remove();
 
-        $('table tr + tr').remove();
+          // console.log(lines);
 
-        // console.log(lines);
-
-        for (i = 0; i < lines.length; i++) {
-          fillLine(lines[i]);
+          for (i = 0; i < lines.length; i++) {
+            fillLine(lines[i]);
+          }
         }
       }
 
