@@ -6,17 +6,23 @@ var async = require('async');
 var get_departure_times = function (long, lat, callback) {
 
   // The geolocations are requiered in a specific format
+  // without points and only 8 digits
   var formLat = lat.replace('.', '');
 
-  while (formLat.length < 8) {
+  while ( formLat.length < 8 ) {
     formLat += '0';
   }
+
+  // cut of last 
+  formLat = formLat.substring(0, 8);
 
   var formLong = long.replace('.', '');
 
   while (formLong.length < 8) {
     formLong += '0';
   }
+
+  formLong = formLong.substring(0, 8);
 
   // Build path
   var path = QUERY_PATH + '&look_x=' + formLong + '&look_y=' + formLat;
@@ -29,19 +35,23 @@ var get_departure_times = function (long, lat, callback) {
       if (err) {
         callback(err, null);
       } else {
+
+        // console.log(body);
         
         var jsonBody = JSON.parse(body);
         var stations = jsonBody.stops;
-        var ids = [];
+
+        var stationsWithId = [];
 
         for(i = 0; i < stations.length; i++) {
-          ids[i] = stations[i].extId;
+          stationsWithId[i] = {id: stations[i].extId, name: stations[i].name};
         }
 
-        console.log('IDs of Stations:');
-        console.log(ids);
+        // console.log('stations of Stations:');
+        // console.log(stations);
 
-        async.map(ids,
+        // look for journeys of each stations
+        async.map(stationsWithId,
           // for each id
           get_journeys,
           // results saved here
@@ -57,7 +67,10 @@ var get_departure_times = function (long, lat, callback) {
 var QUERY_JOURNEYS_PATH = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=1111111111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=20'
 
 
-var get_journeys = function (id, callback) {
+var get_journeys = function (station, callback) {
+
+  var id = station.id;
+  var name = station.name;
 
   // building path with parameters
   var current_date = new Date();
@@ -65,8 +78,8 @@ var get_journeys = function (id, callback) {
 
   var path = QUERY_JOURNEYS_PATH + '&input='+ id + '&time=' + string_date;
 
-  // console.log('Path of Request');
-  // console.log(path);
+  console.log('Path of Request');
+  console.log(path);
 
   request(path, {encoding: null}, function (err, resp, body) {
     if (err) {
@@ -106,7 +119,8 @@ var get_journeys = function (id, callback) {
             "departure": row.ti    
           };
         }
-        callback(null, times);
+
+        callback(null, { station_info: name, departure_times: times });
       }
     }
   });

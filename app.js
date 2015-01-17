@@ -15,8 +15,7 @@ app.use(bodyParser.json());
 var router = express.Router();
 
 router.get('/', function (req, res) {
-  res.write("Hallo Steffi!");
-  res.end();
+  res.render('index');
 });
 
 router.get('/departure-time/location/:long/:lat', function (req, res) {
@@ -32,6 +31,9 @@ router.get('/departure-time/location/:long/:lat', function (req, res) {
 });
 
 app.use('/', router);
+
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 // module interface
 var server = http.createServer(app);
