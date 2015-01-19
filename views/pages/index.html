@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MagdeGo</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      html, body{
+        height: 100%;
+        margin: 0px;
+        padding: 0px;
+        text-align: center;
+      }
+
+      table {
+        margin:0 auto;
+      }
+
+      tr td:first-child {
+        text-align: left;
+      }
+
+      tr td:nth-child(3) {
+        text-align: right;
+      }
+
+      td {
+        padding: 0 0.5em;
+      }
+
+      h1 {
+        color: #1ABC9C;
+      }
+
+      h2 {
+        color: #1ABC9C;
+        margin: 1em;
+      }
+
+      #link {
+        color: #1ABC9C;
+        text-decoration: none;
+        text-align: center;
+      }
+
+      img {
+        height: 3em;
+      }
+
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.3/jquery.mobile.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.3/jquery.mobile.min.js"></script>
+
+    <script>
+      function initialize() {
+        // Try HTML5 geolocation
+        if(navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var lat = position.coords.latitude;
+            var long = position.coords.longitude;
+
+            var URI = 'http://localhost:3000/departure-time/location/'
+            var path = URI + long + '/' + lat;
+
+            console.log(path);
+
+            jQuery.getJSON( path, fillContent);
+
+          }, function() {
+            handleNoGeolocation(true);
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          handleNoGeolocation(false);
+        }
+      }
+
+      function handleNoGeolocation(errorFlag) {
+        if (errorFlag) {
+          var content = 'Error: The Geolocation service failed.';
+        } else {
+          var content = 'Error: Your browser doesn\'t support geolocation.';
+        }
+        $('h2').text(content);
+      }
+
+      var pages = [];
+      var currentIndex = 0;
+
+      function fillContent(data, textStatus, jqXHR) {
+          pages = data;
+
+          if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+            printTH();
+            changePage();
+
+            $('div').on("swiperight", goRight);
+            $('div').on("swipeleft", goLeft);
+          } 
+          else {
+            printAll();
+          }
+      }
+
+      function goRight() {
+
+          currentIndex++;
+          if ( currentIndex >= pages.length ) {
+            currentIndex = 0;
+          }
+          changePage();
+      }
+
+      function goLeft() {
+
+          currentIndex--;
+          if ( currentIndex < 0 ) {
+            currentIndex = pages.length - 1;
+          }
+          changePage();
+      }
+
+      function changePage() {
+        // console.log(currentIndex);
+
+        if ( typeof pages[currentIndex].station_info !== 'undefined') { // FIX THIS
+
+          var station = pages[currentIndex];
+          $('h2').text(station.station_info);
+          var lines = pages[currentIndex].departure_times;
+
+          $('table tr + tr').remove();
+
+          // console.log(lines);
+
+          for (i = 0; i < lines.length; i++) {
+            fillLine(lines[i]);
+          }
+        }
+      }
+
+      function fillLine(line) {
+        $('table:last-child').append('<tr><td>' + line.departure +'</td><td>' + line.direction +'</td><td>' + line.line + '</td></tr>');
+      }
+
+      function printAll() {
+        $('table').remove();
+        $('h2').remove();
+
+        // console.log(pages);
+
+        for(i = 0; i < pages.length; i++) {
+
+            // console.log(i);
+
+            var page = pages[i];
+            $('div').append('<h2>'+ page.station_info +'</h2>');
+            $('div').append('<table></table>');
+            printTH();
+
+            var lines = page.departure_times;
+
+            // console.log('lines');
+            // console.log(lines);
+
+            if ( typeof lines !== 'undefined' ) {
+              for(ii = 0; ii < lines.length; ii++) {
+                fillLine(lines[ii]);
+              }
+            }
+        }
+      }
+
+      function printTH() {
+        console.log('Called');
+        $('table:last-child').append('<thead><tr><th>Abfahrtszeit</th><th>Richtung</th><th>Linie</th></tr></thead>');
+        console.log('success');
+      }
+
+      $(function() {
+        initialize();
+      });
+
+    </script>
+
+  </head>
+  <body>
+    <header>
+      <a id="link" href="/infos">Infos & Impressum</a>
+      <h1><img src="icon.svg"> <br/>MagdeGo</h1>
+    </header>
+
+    <div>
+      <h2>Loading...</h2>
+      <table>
+
+      </table>
+    </div>
+  </body>
+</html>
