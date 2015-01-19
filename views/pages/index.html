@@ -4,50 +4,10 @@
     <title>MagdeGo</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
-    <style>
-      html, body{
-        height: 100%;
-        margin: 0px;
-        padding: 0px;
-        text-align: center;
-      }
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'>
 
-      table {
-        margin:0 auto;
-      }
+    <link rel="stylesheet" type="text/css" href="/style.css">
 
-      tr td:first-child {
-        text-align: left;
-      }
-
-      tr td:nth-child(3) {
-        text-align: right;
-      }
-
-      td {
-        padding: 0 0.5em;
-      }
-
-      h1 {
-        color: #1ABC9C;
-      }
-
-      h2 {
-        color: #1ABC9C;
-        margin: 1em;
-      }
-
-      #link {
-        color: #1ABC9C;
-        text-decoration: none;
-        text-align: center;
-      }
-
-      img {
-        height: 3em;
-      }
-
-    </style>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.3/jquery.mobile.min.css" />
@@ -61,7 +21,7 @@
             var lat = position.coords.latitude;
             var long = position.coords.longitude;
 
-            var URI = 'http://magdego.de/departure-time/location/'
+            var URI = 'http://magdego.de:80/departure-time/location/'
             var path = URI + long + '/' + lat;
 
             console.log(path);

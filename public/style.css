@@ -1,0 +1,47 @@
+html, body {
+  font-family: 'Open Sans', sans-serif;
+  text-align: center;
+  color: #424242;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+}
+
+table {
+  margin:0 auto;
+}
+
+tr td:first-child {
+  text-align: left;
+}
+
+tr td:nth-child(3) {
+  text-align: right;
+}
+
+td {
+  padding: 0 0.5em;
+}
+
+h1 {
+  color: #1ABC9C;
+  font-weight: 400;
+}
+
+h2 {
+  color: #1ABC9C;
+  margin: 1em;
+  font-weight: 400;
+}
+
+/* Just to override jquery-mobile */
+#link {
+  color: #1ABC9C;
+  text-decoration: none;
+  text-align: center;
+}
+
+img {
+  height: 3em;
+}
+
