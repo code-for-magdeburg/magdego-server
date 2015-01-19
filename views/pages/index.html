@@ -142,7 +142,7 @@
       }
 
       function fillLine(line) {
-        $('table:last-child').append('<tr><td>' + line.line +'</td><td>' + line.direction +'</td><td>' + line.departure + '</td></tr>');
+        $('table:last-child').append('<tr><td>' + line.departure +'</td><td>' + line.direction +'</td><td>' + line.line + '</td></tr>');
       }
 
       function printAll() {
@@ -175,7 +175,7 @@
 
       function printTH() {
         console.log('Called');
-        $('table:last-child').append('<thead><tr> <th>Linie</th> <th>Richtung</th> <th>Abfahrtszeit</th> </tr></thead>');
+        $('table:last-child').append('<thead><tr><th>Abfahrtszeit</th><th>Richtung</th><th>Linie</th></tr></thead>');
         console.log('success');
       }
 
