@@ -30,6 +30,10 @@
 
       h1 {
         color: #1ABC9C;
+      }
+
+      h2 {
+        color: #1ABC9C;
         margin: 1em;
       }
 
@@ -37,6 +41,10 @@
         color: #1ABC9C;
         text-decoration: none;
         text-align: center;
+      }
+
+      img {
+        height: 3em;
       }
 
     </style>
@@ -75,7 +83,7 @@
         } else {
           var content = 'Error: Your browser doesn\'t support geolocation.';
         }
-        $('h1').text(content);
+        $('h2').text(content);
       }
 
       var pages = [];
@@ -120,7 +128,7 @@
         if ( typeof pages[currentIndex].station_info !== 'undefined') { // FIX THIS
 
           var station = pages[currentIndex];
-          $('h1').text(station.station_info);
+          $('h2').text(station.station_info);
           var lines = pages[currentIndex].departure_times;
 
           $('table tr + tr').remove();
@@ -139,7 +147,7 @@
 
       function printAll() {
         $('table').remove();
-        $('h1').remove();
+        $('h2').remove();
 
         // console.log(pages);
 
@@ -148,7 +156,7 @@
             // console.log(i);
 
             var page = pages[i];
-            $('div').append('<h1>'+ page.station_info +'</h1>');
+            $('div').append('<h2>'+ page.station_info +'</h2>');
             $('div').append('<table></table>');
             printTH();
 
@@ -180,11 +188,12 @@
   </head>
   <body>
     <header>
-      <a id="link" href="wewe">Infos & Impressum</a>
+      <a id="link" href="/infos">Infos & Impressum</a>
+      <h1><img src="icon.svg"> <br/>MagdeGo</h1>
     </header>
 
     <div>
-      <h1>Loading...</h1>
+      <h2>Loading...</h2>
       <table>
 
       </table>

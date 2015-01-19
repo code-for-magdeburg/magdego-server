@@ -15,8 +15,17 @@ app.use(bodyParser.json());
 var router = express.Router();
 
 router.get('/', function (req, res) {
-  res.render('index');
+  res.render('pages/index');
 });
+
+router.get('/infos', function (req, res) {
+  res.render('pages/infos.ejs');
+});
+
+router.get('/impressum', function (req, res) {
+  res.render('pages/impressum.ejs');
+});
+
 
 router.get('/departure-time/location/:long/:lat', function (req, res) {
   departure.get_departure_times(req.params.long, req.params.lat, function (err, result) {
@@ -34,6 +43,8 @@ app.use('/', router);
 
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
+
+app.use(express.static(__dirname + '/public'));
 
 // module interface
 var server = http.createServer(app);
