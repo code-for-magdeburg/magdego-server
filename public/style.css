@@ -25,13 +25,13 @@ td {
 
 h1 {
   color: #1ABC9C;
-  font-weight: 400;
+  font-weight: 300;
 }
 
 h2 {
   color: #1ABC9C;
   margin: 1em;
-  font-weight: 400;
+  font-weight: 300;
 }
 
 /* Just to override jquery-mobile */
