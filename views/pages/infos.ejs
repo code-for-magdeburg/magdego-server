@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
-  <% include ../partials/head %>
+  <head>
+    <% include ../partials/head %>
+  </head>
   <body>
     <img id="logo" src="icon.svg" >
     <h1>MagdeGo</h1>
@@ -12,12 +14,17 @@
 
     <p>Einfach und schnell erhälst du die Abfahrszeiten aus deiner Umgebung.<br>Die beste App für jeden, der sich in Magdeburg auskennt.</p>
 
-    <p>Die Webapp unter magdego.de ist für den mobilen Einsatz optimiert,<br>lässt sich aber auch auf dem Desktop einsehen.</p>
+    <p>Die Web-App unter <a id="link" href="http://magdego.de"></a> ist für den mobilen Einsatz optimiert,<br>lässt sich aber auch auf herkömlichen Geräten ansehen.</p>
 
-    <p>Eine native App für iOS ist in Planung.<br>Folge uns auf <a href="https://twitter.com/magde_go">Twitter</a> und <a href="https://www.facebook.com/pages/MagdeGo/288911801301317">Facebook</a> für mehr Infos!</p>
+    <p>Eine native App für iOS ist in Planung.<br>Folge uns auf <a id="link" href="https://twitter.com/magde_go">Twitter</a> und <a id="link" href="https://www.facebook.com/pages/MagdeGo/288911801301317">Facebook</a> für mehr Infos!</p>
 
     <h2>Fragen.</h2>
-    <p><i>Woher kommen die Daten?<br></i> Von <a href="http://www.insa.de/">insa.de</a>.</p>
+
+    <p><i>Wie wechsel ich zwischen den Stationen?<br></i>Mobiles Gerät: Nach links oder rechts swipen<br>Gerät mir Pfeiltasten: linke oder rechte Pfeiltaste betätigen.</p>
+
+    <p><i>Was ist eine Web-App?<br></i>Eine Webseite, die du auf deinen Homescreen speichern kannst<br>und sich wie eine App verhält.</p>
+
+    <p><i>Woher kommen die Daten?<br></i> Von <a id="link" href="http://www.insa.de/">insa.de</a>.</p>
 
     <p><i>Funktioniert die App nur in Magdeburg?</i><br>
     Nein, in ganz Sachsen-Anhalt - auch in Halle.</p>
@@ -39,24 +46,31 @@
     </p>
 
     <p><i>Warum macht ihr des sonst?</i><br>
-    Weil wir es können.
+    Weil es möglich ist.
     </p>
 
     <p><i>Kann man mitmachen?</i><br>
-    Ja, der gesamte Code ist auf <a href="https://github.com/rosario-raulin/magdego-server">Gitbub</a>.
+    Ja, der gesamte Code ist auf <a id="link" href="https://github.com/rosario-raulin/magdego-server">Gitbub</a>.
     </p>
 
 
-    <a href="https://www.facebook.com/pages/MagdeGo/288911801301317?ref=bookmarks"><img src="facebook.png"></a>
-    <a href="https://twitter.com/Magde_Go"><img src="twitter.png"></a>
-    <a href="mailto:hi [ at ] magdego.de"><img src="email.png"></a>
+    <a id="link" href="https://www.facebook.com/pages/MagdeGo/288911801301317?ref=bookmarks"><img src="facebook.png"></a>
+    <a id="link" href="https://twitter.com/Magde_Go"><img src="twitter.png"></a>
+    <a id="link" href="mailto:hi [ at ] magdego.de"><img src="email.png"></a>
 
 
-    <p>Ein Projekt von <a href="https://twitter.com/rosario_raulin">@rosario_raulin</a> und <a href="https://twitter.com/fil_ter">@fil_ter</a> aus dem <a href="http://codefor.de/magdeburg/">OK Lab Magdeburg</a>.</p>
+    <p>Ein Projekt von <a id="link" href="https://twitter.com/rosario_raulin">@rosario_raulin</a> und <a id="link" href="https://twitter.com/fil_ter">@fil_ter</a> aus dem <a id="link" href="http://codefor.de/magdeburg/">OK Lab Magdeburg</a>.</p>
 
 
 
-    <p><a href="/impressum">Impressum und Datenschutzerkärung</a></p>
+    <p><a id="link" href="/impressum" rel="external">Impressum und Datenschutzerkärung</a></p>
+
+    <!-- Improve this Code! -->
+    <script type="text/javascript">
+       $('body').on("swipeleft", function() {
+            window.location = "/";
+       });
+    </script>
 
   </body>
 </html>

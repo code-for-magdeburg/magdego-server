@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <% include ../partials/head %>
+    <script>
+
+      $(document).on('swipeleft', '.ui-page', function(event){    
+          if(event.handled !== true) // This will prevent event triggering more then once
+          {    
+              var nextpage = $.mobile.activePage.next('[data-role="page"]');
+              // swipe using id of next page if exists
+              if (nextpage.length > 0) {
+                  $.mobile.changePage(nextpage, {transition: "slide", reverse: false}, true, true);
+              }
+              event.handled = true;
+          }
+          return false;         
+      });
+
+      $(document).on('swiperight', '.ui-page', function(event){     
+          if(event.handled !== true) // This will prevent event triggering more then once
+          {      
+              var prevpage = $(this).prev('[data-role="page"]');
+              if (prevpage.length > 0) {
+                  $.mobile.changePage(prevpage, {transition: "slide", reverse: true}, true, true);
+              }
+              event.handled = true;
+          }
+          return false;            
+      });
+
+      function initialize() {
+        // Try HTML5 geolocation
+        if(navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var lat = position.coords.latitude;
+            var long = position.coords.longitude;
+
+            var URI = 'http://magdego.de:80/departure-time/location/'
+            var path = URI + long + '/' + lat;
+
+            // console.log(path);
+
+            jQuery.getJSON( path, fillContent);
+
+          }, function() {
+            handleNoGeolocation(true);
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          handleNoGeolocation(false);
+        }
+      }
+
+      function handleNoGeolocation(errorFlag) {
+        if (errorFlag) {
+          var content = 'Error: The Geolocation service failed.';
+        } else {
+          var content = 'Error: Your browser doesn\'t support geolocation.';
+        }
+        $('h2').text(content);
+      }
+
+      function fillContent(data, textStatus, jqXHR) {
+          for(i = 0; i < data.length; i++) {
+            createPage(data[i], i);
+          }
+      }
+
+      function createPage(station, index) {
+
+        if ( typeof station.station_info !== 'undefined') { // FIX!
+
+          var s = '';
+          s += '<div data-role="page" id="page' + index + '">';
+          s += '<header><a id="link" href="/infos" rel="external">Infos & Impressum</a><h1><img src="icon.svg"><br/>MagdeGo</h1></header>';
+          s += '<h2>' + station.station_info +'</h2>';
+          s += '<table><thead><tr><th>Abfahrtszeit</th><th>Richtung</th><th>Linie</th></tr></thead>';
+
+          var lines = station.departure_times;
+
+          for (j = 0; j < lines.length; j++) {
+              s += '<tr><td>' + lines[j].departure +'</td><td><small>' + lines[j].direction +'</small></td><td>' + lines[j].line + '</td></tr>';
+          }
+
+          s += '</table></div>';
+
+          var x = $(s);
+          x.appendTo($.mobile.pageContainer);
+
+          if( index == 0 ) {
+            $.mobile.changePage( x );
+          }
+        }
+      }
+
+      $(function() {
+        initialize();
+      });
+
+      $(document).keydown(function(event){    
+        var key = event.which;                
+        switch(key) {
+          case 39:
+            // right
+            var nextpage = $.mobile.activePage.next('[data-role="page"]');
+            if (nextpage.length > 0) {
+              $.mobile.changePage(nextpage, {transition: "slide", reverse: false}, true, true);
+            }
+            break;
+          case 37:
+            // left
+            var prevpage = $.mobile.activePage.prev('[data-role="page"]');
+            if (prevpage.length > 0) {
+              $.mobile.changePage(prevpage, {transition: "slide", reverse: true}, true, true);
+            }
+            break;
+        }   
+  });
+
+    </script>
+  </head>
+  <body>
+  </body>
+</html>

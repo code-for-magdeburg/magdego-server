@@ -78,8 +78,8 @@ var get_journeys = function (station, callback) {
 
   var path = QUERY_JOURNEYS_PATH + '&input='+ id + '&time=' + string_date;
 
-  console.log('Path of Request');
-  console.log(path);
+  // console.log('Path of Request');
+  // console.log(path);
 
   request(path, {encoding: null}, function (err, resp, body) {
     if (err) {
