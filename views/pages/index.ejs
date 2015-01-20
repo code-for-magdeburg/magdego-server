@@ -3,6 +3,32 @@
   <head>
     <% include ../partials/head %>
     <script>
+
+      $(document).on('swipeleft', '.ui-page', function(event){    
+          if(event.handled !== true) // This will prevent event triggering more then once
+          {    
+              var nextpage = $.mobile.activePage.next('[data-role="page"]');
+              // swipe using id of next page if exists
+              if (nextpage.length > 0) {
+                  $.mobile.changePage(nextpage, {transition: "slide", reverse: false}, true, true);
+              }
+              event.handled = true;
+          }
+          return false;         
+      });
+
+      $(document).on('swiperight', '.ui-page', function(event){     
+          if(event.handled !== true) // This will prevent event triggering more then once
+          {      
+              var prevpage = $(this).prev('[data-role="page"]');
+              if (prevpage.length > 0) {
+                  $.mobile.changePage(prevpage, {transition: "slide", reverse: true}, true, true);
+              }
+              event.handled = true;
+          }
+          return false;            
+      });
+
       function initialize() {
         // Try HTML5 geolocation
         if(navigator.geolocation) {
@@ -35,97 +61,37 @@
         $('h2').text(content);
       }
 
-      var pages = [];
-      var currentIndex = 0;
-
       function fillContent(data, textStatus, jqXHR) {
-          pages = data;
-
-          if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-            printTH();
-            changePage();
-
-            $('div').on("swiperight", goRight);
-            $('div').on("swipeleft", goLeft);
-          } 
-          else {
-            printAll();
+          for(i = 0; i < data.length; i++) {
+            createPage(data[i], i);
           }
       }
 
-      function goRight() {
+      function createPage(station, index) {
 
-          currentIndex++;
-          if ( currentIndex >= pages.length ) {
-            currentIndex = 0;
+        if ( typeof station.station_info !== 'undefined') { // FIX!
+
+          var s = '';
+          s += '<div data-role="page" id="page' + index + '">';
+          s += '<header><a id="link" href="/infos" rel="external">Infos & Impressum</a><h1><img src="icon.svg"><br/>MagdeGo</h1></header>';
+          s += '<h2>' + station.station_info +'</h2>';
+          s += '<table><thead><tr><th>Abfahrtszeit</th><th>Richtung</th><th>Linie</th></tr></thead>';
+
+          var lines = station.departure_times;
+
+          for (j = 0; j < lines.length; j++) {
+              s += '<tr><td>' + lines[j].departure +'</td><td><small>' + lines[j].direction +'</small></td><td>' + lines[j].line + '</td></tr>';
           }
-          changePage();
-      }
 
-      function goLeft() {
+          s += '</table></div>';
 
-          currentIndex--;
-          if ( currentIndex < 0 ) {
-            currentIndex = pages.length - 1;
-          }
-          changePage();
-      }
+          var x = $(s);
+          x.appendTo($.mobile.pageContainer);
 
-      function changePage() {
-        // console.log(currentIndex);
-
-        if ( typeof pages[currentIndex].station_info !== 'undefined') { // FIX THIS
-
-          var station = pages[currentIndex];
-          $('h2').text(station.station_info);
-          var lines = pages[currentIndex].departure_times;
-
-          $('table tr + tr').remove();
-
-          // console.log(lines);
-
-          for (i = 0; i < lines.length; i++) {
-            fillLine(lines[i]);
+          if( index == 0 ) {
+            $.mobile.changePage( x );
           }
         }
-      }
-
-      function fillLine(line) {
-        $('table:last-child').append('<tr><td>' + line.departure +'</td><td>' + line.direction +'</td><td>' + line.line + '</td></tr>');
-      }
-
-      function printAll() {
-        $('table').remove();
-        $('h2').remove();
-
-        // console.log(pages);
-
-        for(i = 0; i < pages.length; i++) {
-
-            // console.log(i);
-
-            var page = pages[i];
-            $('div').append('<h2>'+ page.station_info +'</h2>');
-            $('div').append('<table></table>');
-            printTH();
-
-            var lines = page.departure_times;
-
-            // console.log('lines');
-            // console.log(lines);
-
-            if ( typeof lines !== 'undefined' ) {
-              for(ii = 0; ii < lines.length; ii++) {
-                fillLine(lines[ii]);
-              }
-            }
-        }
-      }
-
-      function printTH() {
-        console.log('Called');
-        $('table:last-child').append('<thead><tr><th>Abfahrtszeit</th><th>Richtung</th><th>Linie</th></tr></thead>');
-        console.log('success');
       }
 
       $(function() {
@@ -136,19 +102,6 @@
 
   </head>
   <body>
-  <div data-role="page">
-    <header>
-      <a id="link" href="/infos">Infos & Impressum</a>
-      <h1><img src="icon.svg"> <br/>MagdeGo</h1>
-    </header>
 
-    <div>
-      <h2>Loading...</h2>
-      <table>
-
-      </table>
-   
-    </div>
-  </div>
   </body>
 </html>
