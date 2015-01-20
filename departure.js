@@ -27,28 +27,24 @@ var get_departure_times = function (long, lat, callback) {
   // Build path
   var path = QUERY_PATH + '&look_x=' + formLong + '&look_y=' + formLat;
 
-  // console.log('Path of Request');
-  // console.log(path);
-
   request(path, {encoding: null},
     function (err, resp, body) {
       if (err) {
         callback(err, null);
       } else {
 
-        // console.log(body);
-        
         var jsonBody = JSON.parse(body);
         var stations = jsonBody.stops;
 
         var stationsWithId = [];
 
         for(i = 0; i < stations.length; i++) {
-          stationsWithId[i] = {id: stations[i].extId, name: stations[i].name};
-        }
 
-        // console.log('stations of Stations:');
-        // console.log(stations);
+          // Filter out stations for IC/RB/RE/S-Bahn/U-Bahn
+          if ( parseInt(stations[i].prodclass) > 31 ) {
+            stationsWithId.push( {id: stations[i].extId, name: stations[i].name} );
+          }
+        }
 
         // look for journeys of each stations
         async.map(stationsWithId,
@@ -63,8 +59,9 @@ var get_departure_times = function (long, lat, callback) {
 };
 
 // get journeys of one station
+// productFilter= masking out ICE/IC/RE/RB/S/U
 
-var QUERY_JOURNEYS_PATH = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=1111111111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=20'
+var QUERY_JOURNEYS_PATH = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=0000011111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=20'
 
 
 var get_journeys = function (station, callback) {
@@ -79,7 +76,6 @@ var get_journeys = function (station, callback) {
   var path = QUERY_JOURNEYS_PATH + '&input='+ id + '&time=' + string_date;
 
   // console.log('Path of Request');
-  // console.log(path);
 
   request(path, {encoding: null}, function (err, resp, body) {
     if (err) {
@@ -88,8 +84,6 @@ var get_journeys = function (station, callback) {
 
       // parse to string so we can work on it
       var bodyString = body.toString('utf-8');
-
-      // console.log(bodyString);
 
       // FUCK THIS ENCODING SHIT
       bodyString = decodeHtmlEntity(bodyString);
@@ -116,7 +110,8 @@ var get_journeys = function (station, callback) {
           times[i] = {
             "line": row.pr.replace(/\s+/g, ' '),
             "direction": row.st,
-            "departure": row.ti    
+            "departure": row.ti,
+            "delay": row.rt
           };
         }
 

@@ -2,8 +2,8 @@
 <html>
   <head>
     <% include ../partials/head %>
-    <script>
 
+  <script>
       $(document).on('swipeleft', '.ui-page', function(event){    
           if(event.handled !== true) // This will prevent event triggering more then once
           {    
@@ -36,10 +36,11 @@
             var lat = position.coords.latitude;
             var long = position.coords.longitude;
 
+            // TODO: Check out ENV
             var URI = 'http://magdego.de:80/departure-time/location/'
-            var path = URI + long + '/' + lat;
+            // var URI = 'http://localhost:3000/departure-time/location/'
 
-            // console.log(path);
+            var path = URI + long + '/' + lat;
 
             jQuery.getJSON( path, fillContent);
 
@@ -58,7 +59,7 @@
         } else {
           var content = 'Error: Your browser doesn\'t support geolocation.';
         }
-        $('h2').text(content);
+        $('body').text(content);
       }
 
       function fillContent(data, textStatus, jqXHR) {
@@ -74,20 +75,43 @@
           var s = '';
           s += '<div data-role="page" id="page' + index + '">';
           s += '<header><a id="link" href="/infos" rel="external">Infos & Impressum</a><h1><img src="icon.svg"><br/>MagdeGo</h1></header>';
-          s += '<h2>' + station.station_info +'</h2>';
+
+          var stationWithoutMD = station.station_info.replace('Magdeburg, ','');
+
+          s += '<h2>' + stationWithoutMD +'</h2>';
           s += '<table><thead><tr><th>Abfahrtszeit</th><th>Richtung</th><th>Linie</th></tr></thead>';
 
           var lines = station.departure_times;
 
           for (j = 0; j < lines.length; j++) {
-              s += '<tr><td>' + lines[j].departure +'</td><td><small>' + lines[j].direction +'</small></td><td>' + lines[j].line + '</td></tr>';
+
+              var directionWithoutMD = lines[j].direction.replace('Magdeburg, ', '');
+              var departureModified = lines[j].departure;
+
+              if ( ! lines[j].delay == false ) {
+                var delay = lines[j].delay;
+
+                if (delay.dlm == "0") {
+                  departureModified += ' <span class="green">(+0)</span>';
+                } else {
+                  departureModified = delay.dlt + ' <span class="red">(+' + delay.dlm +')</span>';
+                }
+
+                if( ! delay.status == null ) {
+                  departureModified += delay.status;
+                }
+              }
+
+              s += '<tr><td>' + departureModified +'</td><td>' + directionWithoutMD +'</td><td>' + lines[j].line + '</td></tr>';
           }
 
-          s += '</table></div>';
+          s += '</table>';    
+          s += '</div>';
 
           var x = $(s);
           x.appendTo($.mobile.pageContainer);
 
+          // Show First Page
           if( index == 0 ) {
             $.mobile.changePage( x );
           }
@@ -98,6 +122,7 @@
         initialize();
       });
 
+      // Navigating with Keyboards
       $(document).keydown(function(event){    
         var key = event.which;                
         switch(key) {
@@ -116,7 +141,7 @@
             }
             break;
         }   
-  });
+      });
 
     </script>
   </head>
