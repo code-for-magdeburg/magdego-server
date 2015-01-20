@@ -46,3 +46,11 @@ h2 {
 img {
   height: 3em;
 }
+
+.green {
+  color: #1ABC9C;
+}
+
+.red {
+  color: red;
+}
