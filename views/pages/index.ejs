@@ -98,6 +98,26 @@
         initialize();
       });
 
+      $(document).keydown(function(event){    
+        var key = event.which;                
+        switch(key) {
+          case 39:
+            // right
+            var nextpage = $.mobile.activePage.next('[data-role="page"]');
+            if (nextpage.length > 0) {
+              $.mobile.changePage(nextpage, {transition: "slide", reverse: false}, true, true);
+            }
+            break;
+          case 37:
+            // left
+            var prevpage = $.mobile.activePage.prev('[data-role="page"]');
+            if (prevpage.length > 0) {
+              $.mobile.changePage(prevpage, {transition: "slide", reverse: true}, true, true);
+            }
+            break;
+        }   
+  });
+
     </script>
   </head>
   <body>
