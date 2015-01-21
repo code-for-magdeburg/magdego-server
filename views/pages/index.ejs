@@ -86,7 +86,7 @@
           for (j = 0; j < lines.length; j++) {
 
               var directionModified = lines[j].direction.replace('Magdeburg, ', '');
-              directionModified = directionModified.replace('/','/ ');
+              directionModified = directionModified.replace('/','/<wbr>');
               var departureModified = lines[j].departure;
 
               if ( ! lines[j].delay == false ) {
