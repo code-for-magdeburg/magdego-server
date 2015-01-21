@@ -19,10 +19,15 @@ th:first-child, tr td:first-child {
 
 th:nth-child(3), td:nth-child(3) {
   text-align: right;
+  white-space: nowrap;
 }
 
 td {
   padding: 0 0.5em;
+}
+
+tr:nth-child(even) {
+    background-color: white;
 }
 
 h1 {
@@ -54,3 +59,23 @@ img {
 .red {
   color: red;
 }
+
+@media ( min-width: 320px ) {
+  /* Show the table header rows and set all cells to display: table-cell */
+
+  .fnord-breakpoint td,
+  .fnord-breakpoint th,
+  .fnord-breakpoint tbody th,
+  .fnord-breakpoint tbody td,
+  .fnord-breakpoint thead td,
+  .fnord-breakpoint thead th {
+    display: table-cell;
+    margin: 0;
+  }
+  /* Hide the labels in each cell */
+  .fnord-breakpoint td .ui-table-cell-label,
+  .fnord-breakpoint th .ui-table-cell-label {
+    display: none;
+  }
+}
+
