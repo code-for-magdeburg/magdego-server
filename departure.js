@@ -63,7 +63,6 @@ var get_departure_times = function (long, lat, callback) {
 
 var QUERY_JOURNEYS_PATH = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=0000011111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=50';
 
-
 var get_journeys = function (station, callback) {
 
   var id = station.id;
@@ -107,12 +106,15 @@ var get_journeys = function (station, callback) {
         for (i = 0; i < journeys.length; i++) {
           var row = journeys[i];
 
-          times[i] = {
-            "line": row.pr.replace(/\s+/g, ' '),
-            "direction": row.st,
-            "departure": row.ti,
-            "delay": row.rt
-          };
+          // taking care of wrongly inserted journeys
+          if (row.pr !== "" && row.st !== "" && row.ti !== "") {
+            times.push( {
+              "line": row.pr,
+              "direction": row.st,
+              "departure": row.ti,
+              "delay": row.rt
+            } );
+          }
         }
 
         callback(null, { station_info: name, departure_times: times });
