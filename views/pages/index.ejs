@@ -74,7 +74,7 @@
 
           var s = '';
           s += '<div data-role="page" id="page' + index + '">';
-          s += '<header><a id="link" href="/infos" rel="external">Infos & Impressum</a><h1><img src="icon.svg"><br/>MagdeGo</h1></header>';
+          s += '<header><a id="link" href="/infos" rel="external">Infos & Impressum</a><h1><img src="icon.svg" alt=""><br/>MagdeGo</h1></header>';
 
           var stationWithoutMD = station.station_info.replace('Magdeburg, ','');
 
@@ -121,7 +121,7 @@
               var timeDiff = departureDate - currentDate;
               var minutesUntil = Math.floor(timeDiff / 1000 / 60); // convert to from ms to minutes\
 
-              if ( minutesUntil < 21 ) {
+              if ( minutesUntil < 21 && minutesUntil >= 0) {
                 departureModified = minutesUntil + ' min '
               }
 
