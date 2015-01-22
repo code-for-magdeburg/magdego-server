@@ -55,9 +55,9 @@
 
       function handleNoGeolocation(errorFlag) {
         if (errorFlag) {
-          var content = 'Error: The Geolocation service failed.';
+          var content = 'Leider können wir ohne deine Location nicht viel anfangen. :/';
         } else {
-          var content = 'Error: Your browser doesn\'t support geolocation.';
+          var content = 'Dein Browser unterstütz keine Geolocation. Bitte update/wechsel dein Browser/Betriebssystem.';
         }
         $('body').text(content);
       }
@@ -89,20 +89,47 @@
               directionModified = directionModified.replace('/','/<wbr>');
               var departureModified = lines[j].departure;
 
-              if ( ! lines[j].delay == false ) {
+              var delayInfos = "";
+              if ( ! lines[j].delay === false ) {
                 var delay = lines[j].delay;
-
-                if (delay.dlm == "0") {
-                  departureModified += '<small><span class="green">+0</span></small>';
+                if (delay.dlm === "0") {
+                  delayInfos = '<small><span class="green">+0</span></small>';
                 } else {
-                  departureModified = delay.dlt + '<small><span class="red">+' + delay.dlm +'</span></small>';
+                  departureModified = delay.dlt;
+                  delayInfos = '<small><span class="red">+' + delay.dlm +'</span></small>';
                 }
 
-                if( ! delay.status == null ) {
-                  departureModified += delay.status;
+                if( ! delay.status === null ) {
+                  delayInfos += ' ' + delay.status;
                 }
               }
 
+              // Display minutes until arrival instead of departture time
+              var currentDate = new Date();
+
+              var departureDate = new Date();
+              var splittedDateInput = departureModified.split(':');
+
+              departureDate.setMinutes(parseInt(splittedDateInput[1]));
+              departureDate.setHours(parseInt(splittedDateInput[0]));
+
+              // check if depature day is already next day
+              if ( departureDate < currentDate ) {
+                departureDate = departureDate.getDate() + 1;
+              }
+
+              var timeDiff = departureDate - currentDate;
+              var minutesUntil = timeDiff / 1000 / 60; // convert to from ms to minutes\
+
+              if ( minutesUntil < 21 ) {
+                departureModified = minutesUntil + ' min '
+              }
+
+              // append infos
+              if ( delayInfos.length > 0 ) {
+                departureModified += ' ' + delayInfos;
+              }
+              
               s += '<tr><td>' + departureModified +'</td><td>' + directionModified +'</td><td>' + lines[j].line + '</td></tr>';
           }
           s += '</tbody>';
@@ -113,7 +140,7 @@
           x.appendTo($.mobile.pageContainer);
 
           // Show First Page
-          if( index == 0 ) {
+          if( index === 0 ) {
             $.mobile.changePage( x );
           }
         }
