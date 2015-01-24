@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html manifest="/cache.manifest">
+<!-- <html manifest="/cache.manifest"> -->
+<html>
   <head>
     <% include ../partials/head %>
     <script>
@@ -9,7 +10,7 @@
               var nextpage = $.mobile.activePage.next('[data-role="page"]');
               // swipe using id of next page if exists
               if (nextpage.length > 0) {
-                  $.mobile.changePage(nextpage, {transition: "none", reverse: false}, true, true);
+                  $.mobile.changePage(nextpage, {transition: "slide", reverse: false}, true, true);
               }
               event.handled = true;
           }
@@ -21,7 +22,7 @@
           {      
               var prevpage = $(this).prev('[data-role="page"]');
               if (prevpage.length > 0) {
-                  $.mobile.changePage(prevpage, {transition: "none", reverse: true}, true, true);
+                  $.mobile.changePage(prevpage, {transition: "slide", reverse: true}, true, true);
               }
               event.handled = true;
           }
@@ -135,9 +136,12 @@
           }
           s += '</tbody>';
           s += '</table>';  
-          s += '<div data-role="popup" id="myPopup"><p>Um andere Haltestellen zu sehen: Nach links oder rechts swipen bzw. am PC: Pfeiltasten nutzen.</p></div>';
 
-          s += '<footer><br><div data-role="controlgroup" data-type="horizontal"><a data-rel="popup" href="#myPopup" class="ui-btn ui-icon-plus ui-btn-icon-left">Bedienung</a><a href="/infos" class="ui-btn ui-icon-info ui-btn-icon-left">Infos & Kontakt</a></div><br></footer>'
+          // if ( ! $('#myPopup').length > 0) {
+            s += '<div data-role="popup" id="myPopup' + index + '"><p>Um andere Haltestellen zu sehen: Nach links oder rechts swipen bzw. am PC: Pfeiltasten nutzen.</p></div>';
+          // }
+
+          s += '<footer><br><div data-role="controlgroup" data-type="horizontal"><a data-rel="popup" href="#myPopup' + index + '" class="ui-btn ui-icon-plus ui-btn-icon-left">Bedienung</a><a href="/infos" class="ui-btn ui-icon-info ui-btn-icon-left">Infos & Kontakt</a></div><br></footer>'
           s += '</div>';
 
           var x = $(s);
@@ -177,5 +181,6 @@
     </script>
   </head>
   <body>
+    <h1>Loading...</h1>
   </body>
 </html>

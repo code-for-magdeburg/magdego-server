@@ -97,3 +97,13 @@ img {
     display: none;
   }
 }
+
+.in {
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-duration: 200ms !important;
+}
+
+.out {
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-duration: 100ms !important;
+}
