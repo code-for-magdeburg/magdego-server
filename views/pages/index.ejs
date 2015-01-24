@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html manifest="/cache.manifest">
   <head>
     <% include ../partials/head %>
-
-  <script>
+    <script>
       $(document).on('swipeleft', '.ui-page', function(event){    
           if(event.handled !== true) // This will prevent event triggering more then once
           {    
@@ -55,7 +54,7 @@
 
       function handleNoGeolocation(errorFlag) {
         if (errorFlag) {
-          var content = 'Leider können wir ohne deine Location nicht viel anfangen. :/';
+          var content = 'Wir haben keinen Zugriff deine Geo-Location gegeben. Leider können wir ohne deine Location nicht viel anfangen. :/';
         } else {
           var content = 'Dein Browser unterstütz keine Geolocation. Bitte update/wechsel dein Browser/Betriebssystem.';
         }
@@ -74,7 +73,7 @@
 
           var s = '';
           s += '<div data-role="page" id="page' + index + '">';
-          s += '<header><a id="link" href="/infos" rel="external">Infos & Impressum</a><h1><img src="icon.svg" alt=""><br/>MagdeGo</h1></header>';
+          s += '<header><a id="link" href="/infos" rel="external">Infos & Impressum</a><h1><img src="icon_smaller.png" alt=""><br/>MagdeGo</h1></header>';
 
           var stationWithoutMD = station.station_info.replace('Magdeburg, ','');
 
@@ -171,7 +170,6 @@
             break;
         }   
       });
-
     </script>
   </head>
   <body>
