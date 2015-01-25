@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<!-- <html manifest="/cache.manifest"> -->
-<html>
+<html manifest="/cache.manifest">
+<!-- <html> -->
   <head>
     <% include ../partials/head %>
     <script>
@@ -77,7 +77,8 @@
           // s += '<div data-role="collapsible"><h1>Click me - I am collapsible!</h1><p>I am the expanded content.</p></div>';
           s += '<header><h1><img src="icon_smaller.png" alt=""><br/>MagdeGo</h1></header>';
 
-          var stationWithoutMD = station.station_info.replace('Magdeburg, ','');
+
+          var stationWithoutMD = station.station_info.replace('Magdeburg, ','').replace('Halle (Saale), ', '');
 
           s += '<h2>' + stationWithoutMD +'</h2>';
           s += '<table data-role="table" class="fnord-breakpoint"><thead><tr><th>Abfahrt</th><th>Richtung</th><th>Linie</th></tr></thead>';
@@ -86,7 +87,8 @@
 
           for (j = 0; j < lines.length; j++) {
 
-              var directionModified = lines[j].direction.replace('Magdeburg, ', '');
+              var directionModified = lines[j].direction.replace('Magdeburg, ', '').replace('Halle (Saale), ', '');
+
               directionModified = directionModified.replace('/','/<wbr>');
               var departureModified = lines[j].departure;
 
