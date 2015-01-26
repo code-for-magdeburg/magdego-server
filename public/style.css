@@ -107,3 +107,9 @@ img {
     -webkit-animation-timing-function: ease-in-out;
     -webkit-animation-duration: 100ms !important;
 }
+
+.centerDemo {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}

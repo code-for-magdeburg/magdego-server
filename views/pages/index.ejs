@@ -29,27 +29,41 @@
           return false;            
       });
 
+      function getParameterByName(name) {
+        var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+        return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+      }
+
       function initialize() {
-        // Try HTML5 geolocation
-        if(navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function(position) {
-            var lat = position.coords.latitude;
-            var long = position.coords.longitude;
+        // TODO: Check out ENV
+        var URI = 'http://magdego.de:80/departure-time/location/'
+        // var URI = 'http://localhost:3000/departure-time/location/'
 
-            // TODO: Check out ENV
-            var URI = 'http://magdego.de:80/departure-time/location/'
-            // var URI = 'http://localhost:3000/departure-time/location/'
+        var latParam = getParameterByName('lat');
+        var longParam = getParameterByName('long');
 
-            var path = URI + long + '/' + lat;
-
-            jQuery.getJSON( path, fillContent);
-
-          }, function() {
-            handleNoGeolocation(true);
-          });
+        // check if paramters already provided
+        if( latParam && longParam ) {
+          var path = URI + longParam + '/' + latParam;
+          jQuery.getJSON( path, fillContent );
         } else {
-          // Browser doesn't support Geolocation
-          handleNoGeolocation(false);
+          // Try HTML5 geolocation
+          if( navigator.geolocation ) {
+            navigator.geolocation.getCurrentPosition( function( position ) {
+              var lat = position.coords.latitude;
+              var long = position.coords.longitude;
+
+              var path = URI + long + '/' + lat;
+
+              jQuery.getJSON( path, fillContent );
+
+            }, function() {
+              handleNoGeolocation( true );
+            });
+          } else {
+            // Browser doesn't support Geolocation
+            handleNoGeolocation( false );
+          }          
         }
       }
 
