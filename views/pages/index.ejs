@@ -5,19 +5,19 @@
     <% include ../partials/head %>
     <script>
       $(document).on('swipeleft', '.ui-page', function(event){    
-          if(event.handled !== true) // This will prevent event triggering more then once
+          if ( event.handled !== true ) // This will prevent event triggering more then once
           {    
               var nextpage = $.mobile.activePage.next('[data-role="page"]');
               // swipe using id of next page if exists
-              if (nextpage.length > 0) {
-                  $.mobile.changePage(nextpage, {transition: "slide", reverse: false}, true, true);
+              if ( nextpage.length > 0 ) {
+                  $.mobile.changePage( nextpage, {transition: "slide", reverse: false}, true, true );
               }
               event.handled = true;
           }
           return false;         
       });
 
-      $(document).on('swiperight', '.ui-page', function(event){     
+      $(document).on( 'swiperight', '.ui-page', function(event){     
           if(event.handled !== true) // This will prevent event triggering more then once
           {      
               var prevpage = $(this).prev('[data-role="page"]');
@@ -30,8 +30,8 @@
       });
 
       function getParameterByName(name) {
-        var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-        return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+        var match = RegExp('[?&]' + name + '=([^&]*)').exec( window.location.search );
+        return match && decodeURIComponent(match[1].replace( /\+/g, ' ') );
       }
 
       function initialize() {
@@ -41,12 +41,12 @@
         var longParam = getParameterByName('long');
 
         // check if paramters already provided
-        if( latParam && longParam ) {
+        if ( latParam && longParam ) {
           var path = URI + longParam + '/' + latParam;
           jQuery.getJSON( path, fillContent );
         } else {
           // Try HTML5 geolocation
-          if( navigator.geolocation ) {
+          if ( navigator.geolocation ) {
             navigator.geolocation.getCurrentPosition( function( position ) {
               var lat = position.coords.latitude;
               var long = position.coords.longitude;
@@ -75,8 +75,8 @@
       }
 
       function fillContent(data, textStatus, jqXHR) {
-          for( i = 0; i < data.length; i++ ) {
-            createPage(data[i], i);
+          for ( i = 0; i < data.length; i++ ) {
+            createPage( data[i], i );
           }
 
           if ( data.length === 0 ) {
@@ -86,86 +86,62 @@
 
       function createPage(station, index) {
 
-        if ( typeof station.station_info !== 'undefined') { // FIX!
+        if ( typeof station.station_info !== 'undefined' ) { // FIX!
 
           var s = '';
           s += '<div data-role="page" id="page' + index + '">';
-          // s += '<div data-role="collapsible"><h1>Click me - I am collapsible!</h1><p>I am the expanded content.</p></div>';
           s += '<header><h1><img src="icon_smaller.png" alt=""><br/>MagdeGo</h1></header>';
 
-
-          var stationWithoutMD = station.station_info.replace('Magdeburg, ','').replace('Halle (Saale), ', '').replace('Leipzig, ','');
-
-          s += '<h2>' + stationWithoutMD +'</h2>';
-          s += '<table data-role="table" class="fnord-breakpoint"><thead><tr><th>Abfahrt</th><th>Richtung</th><th>Linie</th></tr></thead>';
+          s += '<h2>' + station.station_info +'</h2>';
+          s += '<table data-role="table" class="fnord-breakpoint"><thead><tr><th>Abf.</th><th> </th><th>Richtung</th><th>Linie</th></tr></thead>';
           s += '<tbody>';
           var lines = station.departure_times;
 
-          for (j = 0; j < lines.length; j++) {
+          for ( j = 0; j < lines.length; j++ ) {
 
-              var directionModified = lines[j].direction.replace('Magdeburg, ', '').replace('Halle (Saale), ', '').replace('Leipzig, ','');
+              var directionModified = lines[j].direction.replace('/','/<wbr>');
+              var delayMin = "";
+              var delayStatus = "";
 
-              directionModified = directionModified.replace('/','/<wbr>');
-              var departureModified = lines[j].departure;
-
-              var delayInfos = "";
               if ( lines[j].hasOwnProperty('delay') ) {
                 var delay = lines[j].delay;
-                if (delay.minutes === "0") {
-                  delayInfos = '<small><span class="green">+0</span></small>';
-                } else {
-                  // Can happen if trip is canceled
-                  if ( delay.departure != null && delay.minutes != null ){
-                    departureModified = delay.departure;
-                    delayInfos = '<small><span class="red">+' + delay.minutes +'</span></small>';
-                  }
+
+                if ( delay.minutes != null ) {
+                  var color= delay.minutes == "0" ? 'green' : 'red';
+                  delayMin = '<big class="' + color +'">•</big>';
                 }
 
                 if( delay.status != null ) {
-                  delayInfos += '<wbr><small class=red>' + delay.status +'</small>';
-                  console.log('appended');
+                  delayStatus = '<wbr><small class=red>' + delay.status +'</small>';
                 }
               }
 
               // Display minutes until arrival instead of departture time
               var currentDate = new Date();
+              var departureDate = new Date(lines[j].departure);
 
-              var departureDate = new Date();
-
-              console.log(departureModified);
-
-              var splittedDateInput = departureModified.split(':');
-
-              departureDate.setMinutes(parseInt(splittedDateInput[1]));
-              departureDate.setHours(parseInt(splittedDateInput[0]));
-
-              // check if depature day is already next day
-              if ( departureDate < currentDate ) {
-                departureDate.setDate(departureDate.getDate() + 1); // increment by one day
-              }
+              // Convert Date to String in correct format
+              var depHours = departureDate.getHours() < 10 ? '0' + departureDate.getHours() : departureDate.getHours();
+              var depMinutes = departureDate.getMinutes() < 10 ? '0' + departureDate.getMinutes() : departureDate.getMinutes();
+              var departureOutput = depHours + ':' + depMinutes;
 
               var timeDiff = departureDate - currentDate;
-              var minutesUntil = Math.floor(timeDiff / 1000 / 60); // convert to from ms to minutes\
+              var minutesUntil = Math.floor(timeDiff / 1000 / 60); // convert to from ms to minutes
 
               // check if minutes are valid
-              if ( minutesUntil === 0) {
-                departureModified = "jetzt";
+              if ( minutesUntil <= 0) {
+                departureOutput = "jetzt";
               } else if ( minutesUntil < 21 && minutesUntil > 0) {
-                departureModified = minutesUntil + ' min '
-              }
-
-              // append infos
-              if ( delayInfos.length > 0 ) {
-                departureModified += ' ' + delayInfos;
+                departureOutput = minutesUntil + ' min '
               }
               
-              s += '<tr><td>' + departureModified +'</td><td>' + directionModified +'</td><td>' + lines[j].line + '</td></tr>';
+              s += '<tr><td>' + departureOutput + delayStatus +'</td><td>' + delayMin + '</td><td>' + directionModified +'</td><td>' + lines[j].line + '</td></tr>';
           }
           s += '</tbody>';
           s += '</table>';  
 
           // if ( ! $('#myPopup').length > 0) {
-            s += '<div data-role="popup" id="myPopup' + index + '"><p>Um andere Haltestellen zu sehen: Nach links oder rechts swipen bzw. am PC: Pfeiltasten nutzen.</p></div>';
+            s += '<div data-role="popup" id="myPopup' + index + '"><p>Um andere Haltestellen zu sehen: Nach links oder rechts swipen bzw. am PC: Pfeiltasten nutzen.</p>Wenn Live-Daten vorhanden sind, werden sie als grüner (pünktlich) oder roter (Verspätung) Punkt angezeigt.</div>';
           // }
 
           s += '<footer><br><div data-role="controlgroup" data-type="horizontal"><a data-rel="popup" href="#myPopup' + index + '" class="ui-btn ui-icon-plus ui-btn-icon-left">Bedienung</a><a href="/infos" class="ui-btn ui-icon-info ui-btn-icon-left">Infos & Kontakt</a></div><br></footer>'
@@ -175,7 +151,7 @@
           x.appendTo($.mobile.pageContainer);
 
           // Show First Page
-          if( index === 0 ) {
+          if ( index === 0 ) {
             $.mobile.changePage( x );
           }
         }
@@ -199,7 +175,7 @@
           case 37:
             // left
             var prevpage = $.mobile.activePage.prev('[data-role="page"]');
-            if (prevpage.length > 0) {
+            if ( prevpage.length > 0 ) {
               $.mobile.changePage(prevpage, {transition: "slide", reverse: true}, true, true);
             }
             break;

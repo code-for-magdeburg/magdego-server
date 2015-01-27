@@ -86,7 +86,7 @@ var QUERY_JOURNEYS_PATH = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs
 var get_journeys = function (station, callback) {
 
   var id = station.id;
-  var name = station.name;
+  var name = removeCityNames(station.name);
 
   // building path with parameters
   var current_date = new Date();
@@ -129,19 +129,55 @@ var get_journeys = function (station, callback) {
           // taking care of wrongly inserted journeys
           if ( row.pr !== "" && row.st !== "" && row.ti !== "" ) {
 
+            // INSA format of Date
+            var insaDate = row.ti;
+
             var obj = {
               "line": row.pr,
-              "direction": row.st,
-              "departure": row.ti
+              "direction": removeCityNames(row.st),
             };
 
             if (! row.rt === false) {
-              obj['delay'] = {"minutes": row.rt.dlm, "departure": row.rt.dlt, "status": row.rt.status};
+              obj['delay'] = {};
+
+              if ( row.rt.dlm != null) {
+                obj['delay']['minutes'] = row.rt.dlm;
+              }
+
+              if ( row.rt.status != null) {
+                obj['delay']['status'] = row.rt.status;
+              }
+
+              // override original departure
+              if ( row.rt.dlt != null) {
+                insaDate = row.rt.dlt;
+              }
             }
+
+            // convert to Date
+            var currentDate = new Date();
+            var departureDate = new Date();
+            var splittedDateInput = insaDate.split(':');
+
+            departureDate.setMinutes(parseInt(splittedDateInput[1]));
+            departureDate.setHours(parseInt(splittedDateInput[0]));
+
+            if ( departureDate < currentDate ) {
+              departureDate.setDate(departureDate.getDate() + 1); // increment by one day
+            }
+
+            obj['departure'] = departureDate.toJSON();
 
             times.push( obj );
           }
         }
+
+        // Sorting because INSA don't provide it sorted
+        // Compare on Dates
+        times.sort(function(a, b) {
+          return a.departure.localeCompare(b.departure);
+        });
+
         callback(null, { station_info: name, departure_times: times });
       }
     }
@@ -152,6 +188,10 @@ var decodeHtmlEntity = function(str) {
   return str.replace(/&#(\d+);/g, function(match, dec) {
     return String.fromCharCode(dec);
   });
+};
+
+var removeCityNames = function(str) {
+  return str.replace('Magdeburg, ','').replace('Halle (Saale), ', '').replace('Leipzig, ','');
 };
 
 exports.get_departure_times = get_departure_times;
