@@ -48,28 +48,32 @@ var get_departure_times = function (long, lat, callback) {
       if (err) {
         callback(err, null);
       } else {
+        try {
+          var jsonBody = JSON.parse(body);
 
-        var jsonBody = JSON.parse(body);
-        var stations = jsonBody.stops;
+          var stations = jsonBody.stops;
 
-        var stationsWithId = [];
+          var stationsWithId = [];
 
-        for(i = 0; i < stations.length; i++) {
+          for(i = 0; i < stations.length; i++) {
 
-          // Filter out stations for IC/RB/RE/S-Bahn/U-Bahn
-          if ( parseInt(stations[i].prodclass) > 31 ) {
-            stationsWithId.push( {id: stations[i].extId, name: stations[i].name} );
+            // Filter out stations for IC/RB/RE/S-Bahn/U-Bahn
+            if ( parseInt(stations[i].prodclass) > 31 ) {
+              stationsWithId.push( {id: stations[i].extId, name: stations[i].name} );
+            }
           }
-        }
 
-        // look for journeys of each stations
-        async.map(stationsWithId,
-          // for each id
-          get_journeys,
-          // results saved here
-          function(err, times){
-            callback(null, times);
-          });
+          // look for journeys of each stations
+          async.map ( stationsWithId,
+            // for each id
+            get_journeys,
+            // results saved here
+            function(err, times){
+              callback(null, times);
+            });
+        } catch (e) {
+          callback(err, []); // return empty error
+        }
       }
   });
 };
@@ -138,7 +142,6 @@ var get_journeys = function (station, callback) {
             times.push( obj );
           }
         }
-
         callback(null, { station_info: name, departure_times: times });
       }
     }

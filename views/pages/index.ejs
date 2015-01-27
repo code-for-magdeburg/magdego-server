@@ -35,9 +35,7 @@
       }
 
       function initialize() {
-        // TODO: Check out ENV
-        var URI = 'http://magdego.de:80/departure-time/location/'
-        // var URI = 'http://localhost:3000/departure-time/location/'
+        var URI = '/departure-time/location/'
 
         var latParam = getParameterByName('lat');
         var longParam = getParameterByName('long');
@@ -68,17 +66,21 @@
       }
 
       function handleNoGeolocation(errorFlag) {
-        if (errorFlag) {
+        if ( errorFlag ) {
           var content = 'Wir haben keinen Zugriff deine Geo-Location gegeben. Leider können wir ohne deine Location nicht viel anfangen. :/';
         } else {
           var content = 'Dein Browser unterstütz keine Geolocation. Bitte update/wechsel dein Browser/Betriebssystem.';
         }
-        $('body').text(content);
+        $( 'body' ).text( content );
       }
 
       function fillContent(data, textStatus, jqXHR) {
-          for(i = 0; i < data.length; i++) {
+          for( i = 0; i < data.length; i++ ) {
             createPage(data[i], i);
+          }
+
+          if ( data.length === 0 ) {
+            window.location = '/demo';
           }
       }
 
@@ -92,7 +94,7 @@
           s += '<header><h1><img src="icon_smaller.png" alt=""><br/>MagdeGo</h1></header>';
 
 
-          var stationWithoutMD = station.station_info.replace('Magdeburg, ','').replace('Halle (Saale), ', '');
+          var stationWithoutMD = station.station_info.replace('Magdeburg, ','').replace('Halle (Saale), ', '').replace('Leipzig, ','');
 
           s += '<h2>' + stationWithoutMD +'</h2>';
           s += '<table data-role="table" class="fnord-breakpoint"><thead><tr><th>Abfahrt</th><th>Richtung</th><th>Linie</th></tr></thead>';
@@ -101,7 +103,7 @@
 
           for (j = 0; j < lines.length; j++) {
 
-              var directionModified = lines[j].direction.replace('Magdeburg, ', '').replace('Halle (Saale), ', '');
+              var directionModified = lines[j].direction.replace('Magdeburg, ', '').replace('Halle (Saale), ', '').replace('Leipzig, ','');
 
               directionModified = directionModified.replace('/','/<wbr>');
               var departureModified = lines[j].departure;
@@ -112,11 +114,16 @@
                 if (delay.minutes === "0") {
                   delayInfos = '<small><span class="green">+0</span></small>';
                 } else {
-                  departureModified = delay.departure;
-                  delayInfos = '<small><span class="red">+' + delay.minutes +'</span></small>';
+                  // Can happen if trip is canceled
+                  if ( delay.departure != null && delay.minutes != null ){
+                    departureModified = delay.departure;
+                    delayInfos = '<small><span class="red">+' + delay.minutes +'</span></small>';
+                  }
                 }
-                if( ! delay.status === null ) {
-                  delayInfos += ' ' + delay.status;
+
+                if( delay.status != null ) {
+                  delayInfos += '<wbr><small class=red>' + delay.status +'</small>';
+                  console.log('appended');
                 }
               }
 
@@ -124,6 +131,9 @@
               var currentDate = new Date();
 
               var departureDate = new Date();
+
+              console.log(departureModified);
+
               var splittedDateInput = departureModified.split(':');
 
               departureDate.setMinutes(parseInt(splittedDateInput[1]));
