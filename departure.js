@@ -119,17 +119,23 @@ var get_journeys = function (station, callback) {
       else
       {
         var journeys = jsonBody.journey;
-        for (i = 0; i < journeys.length; i++) {
+        for ( i = 0; i < journeys.length; i++ ) {
           var row = journeys[i];
 
           // taking care of wrongly inserted journeys
-          if (row.pr !== "" && row.st !== "" && row.ti !== "") {
-            times.push( {
+          if ( row.pr !== "" && row.st !== "" && row.ti !== "" ) {
+
+            var obj = {
               "line": row.pr,
               "direction": row.st,
-              "departure": row.ti,
-              "delay": row.rt
-            } );
+              "departure": row.ti
+            };
+
+            if (! row.rt === false) {
+              obj['delay'] = {"minutes": row.rt.dlm, "departure": row.rt.dlt, "status": row.rt.status};
+            }
+
+            times.push( obj );
           }
         }
 

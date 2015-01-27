@@ -107,15 +107,14 @@
               var departureModified = lines[j].departure;
 
               var delayInfos = "";
-              if ( ! lines[j].delay === false ) {
+              if ( lines[j].hasOwnProperty('delay') ) {
                 var delay = lines[j].delay;
-                if (delay.dlm === "0") {
+                if (delay.minutes === "0") {
                   delayInfos = '<small><span class="green">+0</span></small>';
                 } else {
-                  departureModified = delay.dlt;
-                  delayInfos = '<small><span class="red">+' + delay.dlm +'</span></small>';
+                  departureModified = delay.departure;
+                  delayInfos = '<small><span class="red">+' + delay.minutes +'</span></small>';
                 }
-
                 if( ! delay.status === null ) {
                   delayInfos += ' ' + delay.status;
                 }
@@ -139,7 +138,9 @@
               var minutesUntil = Math.floor(timeDiff / 1000 / 60); // convert to from ms to minutes\
 
               // check if minutes are valid
-              if ( minutesUntil < 21 && minutesUntil >= 0) {
+              if ( minutesUntil === 0) {
+                departureModified = "jetzt";
+              } else if ( minutesUntil < 21 && minutesUntil > 0) {
                 departureModified = minutesUntil + ' min '
               }
 
