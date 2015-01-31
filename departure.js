@@ -31,11 +31,12 @@ var getFormatedCoordinate = function(coordinate) {
 
   // cut of last
   formattedCoordinate = formattedCoordinate.substring(0, 8);
+
+  return formattedCoordinate;
 };
 
 
 var getQueryPath = function(longitude, latitude) {
-
   var formattedLongitude = getFormatedCoordinate(longitude);
   var formattedLatitude = getFormatedCoordinate(latitude);
 
@@ -44,10 +45,6 @@ var getQueryPath = function(longitude, latitude) {
 
 
 var get_departure_times = function (long, lat, callback) {
-
-
-
-  // Build path
   var path = getQueryPath(long, lat);
 
   request(path, {encoding: null},
@@ -57,7 +54,6 @@ var get_departure_times = function (long, lat, callback) {
       } else {
         try {
           var jsonBody = JSON.parse(body);
-          console.log(jsonBody);
 
           var stations = jsonBody.stops;
 
@@ -101,8 +97,6 @@ var get_journeys = function (station, callback) {
   var string_date = current_date.getHours() + ':' + current_date.getMinutes();
 
   var path = QUERY_JOURNEYS_PATH + '&input='+ id + '&time=' + string_date;
-
-  // console.log('Path of Request');
 
   request(path, {encoding: null}, function (err, resp, body) {
     if (err) {
