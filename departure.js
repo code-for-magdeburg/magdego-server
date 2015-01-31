@@ -19,29 +19,36 @@ var QUERY_PATH = 'http://reiseauskunft.insa.de/bin/query.exe/dny?performLocating
 var request = require('request');
 var async = require('async');
 
-var get_departure_times = function (long, lat, callback) {
 
+var getFormatedCoordinate = function(coordinate) {
   // The geolocations are requiered in a specific format
   // without points and only 8 digits
-  var formLat = lat.replace('.', '');
+  var formattedCoordinate = coordinate.replace('.', '');
 
-  while ( formLat.length < 8 ) {
-    formLat += '0';
+  while ( formattedCoordinate.length < 8 ) {
+    formattedCoordinate += '0';
   }
 
   // cut of last
-  formLat = formLat.substring(0, 8);
+  formattedCoordinate = formattedCoordinate.substring(0, 8);
+};
 
-  var formLong = long.replace('.', '');
 
-  while (formLong.length < 8) {
-    formLong += '0';
-  }
+var getQueryPath = function(long, lat) {
 
-  formLong = formLong.substring(0, 8);
+  var formLong = getFormatedCoordinate(long);
+  var formLat = getFormatedCoordinate(lat);
+
+  return QUERY_PATH + '&look_x=' + formLong + '&look_y=' + formLat;
+};
+
+
+var get_departure_times = function (long, lat, callback) {
+
+
 
   // Build path
-  var path = QUERY_PATH + '&look_x=' + formLong + '&look_y=' + formLat;
+  var path = getQueryPath(long, lat);
 
   request(path, {encoding: null},
     function (err, resp, body) {
@@ -50,6 +57,7 @@ var get_departure_times = function (long, lat, callback) {
       } else {
         try {
           var jsonBody = JSON.parse(body);
+          console.log(jsonBody);
 
           var stations = jsonBody.stops;
 
