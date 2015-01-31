@@ -17,18 +17,17 @@
 var cfg = require('./config').Config;
 
 var express = require('express');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
 var http = require('http');
 var cors = require('cors');
 
 
 // setup app routes
 var app = express();
+var router = express.Router();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-var router = express.Router();
 
 require('./routes')(router);
 app.use('/', router);
