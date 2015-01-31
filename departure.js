@@ -46,25 +46,31 @@ var getQueryPath = function(longitude, latitude) {
 };
 
 
+// Filter out stations for IC/RB/RE/S-Bahn/U-Bahn
+var getFilteredStations = function(stations) {
+  var stationsWithId = [];
+
+  for(i = 0; i < stations.length; i++) {
+    if ( parseInt(stations[i].prodclass) > 31 ) {
+      stationsWithId.push( {id: stations[i].extId, name: stations[i].name} );
+    }
+  }
+
+  return stationsWithId;
+};
+
+
 var getRequestCallback = function(callback){
   return function (err, resp, body) {
+
       if (err) {
         callback(err, null);
+
       } else {
         try {
-          var jsonBody = JSON.parse(body);
-
-          var stations = jsonBody.stops;
-
-          var stationsWithId = [];
-
-          for(i = 0; i < stations.length; i++) {
-
-            // Filter out stations for IC/RB/RE/S-Bahn/U-Bahn
-            if ( parseInt(stations[i].prodclass) > 31 ) {
-              stationsWithId.push( {id: stations[i].extId, name: stations[i].name} );
-            }
-          }
+          var bodyJSON = JSON.parse(body);
+          var stations = bodyJSON.stops;
+          var stationsWithId = getFilteredStations(stations);
 
           // look for journeys of each stations
           async.map ( stationsWithId,
@@ -95,6 +101,14 @@ var getJourneyQueryPath = function(stationID) {
   var string_date = current_date.getHours() + ':' + current_date.getMinutes();
 
   return QUERY_JOURNEYS_PATH_BASE + '&input='+ stationID + '&time=' + string_date;
+};
+
+
+var parseHtmlBodyToJSON = function(body) {
+  var bodyString = body.toString('utf-8');
+  var bodyStringDecoded = decodeHtmlEntity(bodyString).replace('journeysObj = ','');
+
+  return JSON.parse(bodyStringDecoded);
 }
 
 
@@ -102,30 +116,21 @@ var getJourneyRequestCallback = function(name, callback) {
   return function (err, resp, body) {
     if (err) {
       callback(err, null);
+
     } else {
 
-      // parse to string so we can work on it
-      var bodyString = body.toString('utf-8');
-
-      // FUCK THIS ENCODING SHIT
-      bodyString = decodeHtmlEntity(bodyString);
-
-      // remove the object in front of the json
-      bodyString = bodyString.replace('journeysObj = ','');
-
-      // get JSON object
-      var jsonBody = JSON.parse(bodyString);
+      var bodyJSON = parseHtmlBodyToJSON(body);
 
       times = [];
 
       // return if no journeys are present
-      if( !jsonBody.hasOwnProperty('journey') )
+      if( !bodyJSON.hasOwnProperty('journey') )
       {
         callback(null, times);
       }
       else
       {
-        var journeys = jsonBody.journey;
+        var journeys = bodyJSON.journey;
         for ( i = 0; i < journeys.length; i++ ) {
           var row = journeys[i];
 
