@@ -18,6 +18,8 @@ var request = require('request');
 var async = require('async');
 
 var QUERY_PATH_BASE = 'http://reiseauskunft.insa.de/bin/query.exe/dny?performLocating=2&tpl=stop2json&look_maxno=20';
+var QUERY_JOURNEYS_PATH_BASE = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=0000011111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=30';
+
 
 
 var getFormatedCoordinate = function(coordinate) {
@@ -44,11 +46,8 @@ var getQueryPath = function(longitude, latitude) {
 };
 
 
-var get_departure_times = function (long, lat, callback) {
-  var path = getQueryPath(long, lat);
-
-  request(path, {encoding: null},
-    function (err, resp, body) {
+var getRequestCallback = function(callback){
+  return function (err, resp, body) {
       if (err) {
         callback(err, null);
       } else {
@@ -70,7 +69,7 @@ var get_departure_times = function (long, lat, callback) {
           // look for journeys of each stations
           async.map ( stationsWithId,
             // for each id
-            get_journeys,
+            getJourneys,
             // results saved here
             function(err, times){
               callback(null, times);
@@ -79,26 +78,28 @@ var get_departure_times = function (long, lat, callback) {
           callback(err, []); // return empty error
         }
       }
-  });
+  };
 };
 
-// get journeys of one station
-// productFilter= masking out ICE/IC/RE/RB/S/U
 
-var QUERY_JOURNEYS_PATH = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=0000011111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=30';
+var getDepartureTimes = function (long, lat, callback) {
+  var path = getQueryPath(long, lat);
 
-var get_journeys = function (station, callback) {
+  //TODO-Moezalez refactor callbacks. Maybe Q Library?
+  request(path, {encoding: null}, getRequestCallback(callback));
+};
 
-  var id = station.id;
-  var name = removeCityNames(station.name);
 
-  // building path with parameters
+var getJourneyQueryPath = function(stationID) {
   var current_date = new Date();
   var string_date = current_date.getHours() + ':' + current_date.getMinutes();
 
-  var path = QUERY_JOURNEYS_PATH + '&input='+ id + '&time=' + string_date;
+  return QUERY_JOURNEYS_PATH_BASE + '&input='+ stationID + '&time=' + string_date;
+}
 
-  request(path, {encoding: null}, function (err, resp, body) {
+
+var getJourneyRequestCallback = function(name, callback) {
+  return function (err, resp, body) {
     if (err) {
       callback(err, null);
     } else {
@@ -183,7 +184,17 @@ var get_journeys = function (station, callback) {
         callback(null, { station_info: name, departure_times: times });
       }
     }
-  });
+  };
+};
+
+
+// get journeys of one station
+// productFilter= masking out ICE/IC/RE/RB/S/U
+var getJourneys = function (station, callback) {
+  var name = removeCityNames(station.name);
+  var path = getJourneyQueryPath(station.id);
+
+  request(path, {encoding: null}, getJourneyRequestCallback(name, callback));
 };
 
 var decodeHtmlEntity = function(str) {
@@ -196,4 +207,4 @@ var removeCityNames = function(str) {
   return str.replace('Magdeburg, ','').replace('Halle (Saale), ', '').replace('Leipzig, ','');
 };
 
-exports.get_departure_times = get_departure_times;
+exports.get_departure_times = getDepartureTimes;
