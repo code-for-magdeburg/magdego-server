@@ -14,17 +14,13 @@
   limitations under the License.
   */
 
-var cfg = require('./config').Config;
-
 var express = require('express');
 var bodyParser = require('body-parser');
 var http = require('http');
-var cors = require('cors');
 
-
-// setup app routes
 var app = express();
 var router = express.Router();
+var cfg = require('./config').Config;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
