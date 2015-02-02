@@ -5,17 +5,9 @@ var assert = require('assert');
 var should = require('chai').should();
 var _ = require('lodash');
 
-
-before(function () {
-	app.boot(3000);
-});
-
-var validRequestString = 'http://localhost:3000/?long=11.6289&lat=52.1308';
-
 describe('----Test main function----', function () {
 
 	it('get_departure_times should return object with valid station information', function (done) {
-	  http.get(validRequestString, function (res) {
 	    Departure.get_departure_times('11.6289', '52.1308', function(err, res) {
 	    	if(err){
 	    		done(err);
@@ -34,7 +26,6 @@ describe('----Test main function----', function () {
 	    	})
 	    	done();
 	    })
-	  });
 	});
 
 });
