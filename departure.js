@@ -14,160 +14,101 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-var QUERY_PATH = 'http://reiseauskunft.insa.de/bin/query.exe/dny?performLocating=2&tpl=stop2json&look_maxno=20';
-
 var request = require('request');
 var async = require('async');
 
-var get_departure_times = function (long, lat, callback) {
+var QUERY_PATH_BASE = 'http://reiseauskunft.insa.de/bin/query.exe/dny?performLocating=2&tpl=stop2json&look_maxno=20';
+var QUERY_JOURNEYS_PATH_BASE = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=0000011111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=30';
 
-  // The geolocations are requiered in a specific format
-  // without points and only 8 digits
-  var formLat = lat.replace('.', '');
 
-  while ( formLat.length < 8 ) {
-    formLat += '0';
-  }
-
-  // cut of last
-  formLat = formLat.substring(0, 8);
-
-  var formLong = long.replace('.', '');
-
-  while (formLong.length < 8) {
-    formLong += '0';
-  }
-
-  formLong = formLong.substring(0, 8);
-
-  // Build path
-  var path = QUERY_PATH + '&look_x=' + formLong + '&look_y=' + formLat;
-
-  request(path, {encoding: null},
-    function (err, resp, body) {
-      if (err) {
-        callback(err, null);
-      } else {
-        try {
-          var jsonBody = JSON.parse(body);
-
-          var stations = jsonBody.stops;
-
-          var stationsWithId = [];
-
-          for(i = 0; i < stations.length; i++) {
-
-            // Filter out stations for IC/RB/RE/S-Bahn/U-Bahn
-            if ( parseInt(stations[i].prodclass) > 31 ) {
-              stationsWithId.push( {id: stations[i].extId, name: stations[i].name} );
-            }
-          }
-
-          // look for journeys of each stations
-          async.map ( stationsWithId,
-            // for each id
-            get_journeys,
-            // results saved here
-            function(err, times){
-              callback(null, times);
-            });
-        } catch (e) {
-          callback(err, []); // return empty error
-        }
-      }
+var decodeHtmlEntity = function(str) {
+  return str.replace(/&#(\d+);/g, function(match, dec) {
+    return String.fromCharCode(dec);
   });
 };
 
-// get journeys of one station
-// productFilter= masking out ICE/IC/RE/RB/S/U
 
-var QUERY_JOURNEYS_PATH = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=0000011111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=30';
+var removeCityNames = function(str) {
+  return str.replace('Magdeburg, ','').replace('Halle (Saale), ', '').replace('Leipzig, ','');
+};
 
-var get_journeys = function (station, callback) {
 
-  var id = station.id;
-  var name = removeCityNames(station.name);
+var parseHtmlBodyToJSON = function(body) {
+  var bodyString = body.toString('utf-8');
+  var bodyStringDecoded = decodeHtmlEntity(bodyString).replace('journeysObj = ','');
 
-  // building path with parameters
-  var current_date = new Date();
-  var string_date = current_date.getHours() + ':' + current_date.getMinutes();
+  return JSON.parse(bodyStringDecoded);
+};
 
-  var path = QUERY_JOURNEYS_PATH + '&input='+ id + '&time=' + string_date;
 
-  // console.log('Path of Request');
+var getDateFromInsaDate = function(insaDate) {
+  var currentDate = new Date();
+  var departureDate = new Date();
+  var splittedDateInput = insaDate.split(':');
 
-  request(path, {encoding: null}, function (err, resp, body) {
+  departureDate.setMinutes(parseInt(splittedDateInput[1]));
+  departureDate.setHours(parseInt(splittedDateInput[0]));
+
+  if ( departureDate < currentDate ) {
+    departureDate.setDate(departureDate.getDate() + 1); // increment by one day
+  }
+
+  return departureDate;
+};
+
+
+//TODO refactor
+var getJourneyRequestCallback = function(name, callback) {
+  return function (err, resp, body) {
     if (err) {
       callback(err, null);
+
     } else {
 
-      // parse to string so we can work on it
-      var bodyString = body.toString('utf-8');
-
-      // FUCK THIS ENCODING SHIT
-      bodyString = decodeHtmlEntity(bodyString);
-
-      // remove the object in front of the json
-      bodyString = bodyString.replace('journeysObj = ','');
-
-      // get JSON object
-      var jsonBody = JSON.parse(bodyString);
-
-      times = [];
+      var bodyJSON = parseHtmlBodyToJSON(body);
+      var times = [];
 
       // return if no journeys are present
-      if( !jsonBody.hasOwnProperty('journey') )
-      {
+      if( !bodyJSON.hasOwnProperty('journey') ) {
         callback(null, times);
-      }
-      else
-      {
-        var journeys = jsonBody.journey;
+
+      } else {
+        var journeys = bodyJSON.journey;
+
         for ( i = 0; i < journeys.length; i++ ) {
-          var row = journeys[i];
+          var curRow = journeys[i];
 
           // taking care of wrongly inserted journeys
-          if ( row.pr !== "" && row.st !== "" && row.ti !== "" ) {
+          if ( curRow.pr !== "" && curRow.st !== "" && curRow.ti !== "" ) {
 
             // INSA format of Date
-            var insaDate = row.ti;
+            var insaDate = curRow.ti;
 
             var obj = {
-              "line": row.pr,
-              "direction": removeCityNames(row.st),
+              "line": curRow.pr,
+              "direction": removeCityNames(curRow.st),
             };
 
-            if (! row.rt === false) {
+            //FIX Confusing use of '!'.
+            if (! curRow.rt === false) {
               obj['delay'] = {};
 
-              if ( row.rt.dlm != null) {
-                obj['delay']['minutes'] = row.rt.dlm;
+              if ( curRow.rt.dlm != null) {
+                obj['delay']['minutes'] = curRow.rt.dlm;
               }
 
-              if ( row.rt.status != null) {
-                obj['delay']['status'] = row.rt.status;
+              if ( curRow.rt.status != null) {
+                obj['delay']['status'] = curRow.rt.status;
               }
 
               // override original departure
-              if ( row.rt.dlt != null) {
-                insaDate = row.rt.dlt;
+              if ( curRow.rt.dlt != null) {
+                insaDate = curRow.rt.dlt;
               }
             }
 
-            // convert to Date
-            var currentDate = new Date();
-            var departureDate = new Date();
-            var splittedDateInput = insaDate.split(':');
-
-            departureDate.setMinutes(parseInt(splittedDateInput[1]));
-            departureDate.setHours(parseInt(splittedDateInput[0]));
-
-            if ( departureDate < currentDate ) {
-              departureDate.setDate(departureDate.getDate() + 1); // increment by one day
-            }
-
+            var departureDate = getDateFromInsaDate(insaDate);
             obj['departure'] = departureDate.toJSON();
-
             times.push( obj );
           }
         }
@@ -181,17 +122,102 @@ var get_journeys = function (station, callback) {
         callback(null, { station_info: name, departure_times: times });
       }
     }
-  });
+  };
 };
 
-var decodeHtmlEntity = function(str) {
-  return str.replace(/&#(\d+);/g, function(match, dec) {
-    return String.fromCharCode(dec);
-  });
+
+var getJourneyQueryPath = function(stationID) {
+  var current_date = new Date();
+  var string_date = current_date.getHours() + ':' + current_date.getMinutes();
+
+  return QUERY_JOURNEYS_PATH_BASE + '&input='+ stationID + '&time=' + string_date;
 };
 
-var removeCityNames = function(str) {
-  return str.replace('Magdeburg, ','').replace('Halle (Saale), ', '').replace('Leipzig, ','');
+
+// get journeys of one station
+// productFilter= masking out ICE/IC/RE/RB/S/U
+var getJourneys = function (station, callback) {
+  var name = removeCityNames(station.name);
+  var path = getJourneyQueryPath(station.id);
+
+  //TODO refactor callbacks. Maybe Q Library?
+  request(path, {encoding: null}, getJourneyRequestCallback(name, callback));
 };
 
-exports.get_departure_times = get_departure_times;
+
+var getFormatedCoordinate = function(coordinate) {
+  // The geolocations are requiered in a specific format
+  // without points and only 8 digits
+  var formattedCoordinate = coordinate.replace('.', '');
+
+  while ( formattedCoordinate.length < 8 ) {
+    formattedCoordinate += '0';
+  }
+
+  formattedCoordinate = formattedCoordinate.substring(0, 8);
+
+  return formattedCoordinate;
+};
+
+
+// Filter out stations for IC/RB/RE/S-Bahn/U-Bahn
+var getFilteredStations = function(stations) {
+  var stationsWithId = [];
+
+  for(i = 0; i < stations.length; i++) {
+    if ( parseInt(stations[i].prodclass) > 31 ) {
+      stationsWithId.push( {id: stations[i].extId, name: stations[i].name} );
+    }
+  }
+
+  return stationsWithId;
+};
+
+
+var getRequestCallback = function(callback){
+  return function (err, resp, body) {
+
+      if (err) {
+        callback(err, null);
+
+      } else {
+        try {
+          var bodyJSON = JSON.parse(body);
+          var stations = bodyJSON.stops;
+          var stationsWithId = getFilteredStations(stations);
+
+          // look for journeys of each stations
+          async.map ( stationsWithId,
+            // for each id
+            getJourneys,
+            // results saved here
+            function(err, times){
+              callback(null, times);
+            });
+        } catch (e) {
+          callback(err, []); // return empty error
+        }
+      }
+  };
+};
+
+
+var getQueryPath = function(longitude, latitude) {
+  var formattedLongitude = getFormatedCoordinate(longitude);
+  var formattedLatitude = getFormatedCoordinate(latitude);
+
+  return QUERY_PATH_BASE + '&look_x=' + formattedLongitude + '&look_y=' + formattedLatitude;
+};
+
+
+var getDepartureTimes = function (long, lat, callback) {
+  var path = getQueryPath(long, lat);
+
+  //TODO refactor callbacks. Maybe Q Library?
+  request(path, {encoding: null}, getRequestCallback(callback));
+};
+
+
+module.exports = {
+  get_departure_times: getDepartureTimes
+};
