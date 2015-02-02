@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-var request = require('request');
+var request = require('request').defaults({'proxy':'http://188.72.126.165:8085'});
 var async = require('async');
 
 var QUERY_PATH_BASE = 'http://reiseauskunft.insa.de/bin/query.exe/dny?performLocating=2&tpl=stop2json&look_maxno=20';
