@@ -16,6 +16,7 @@ limitations under the License.
 
 var request = require('request').defaults({'proxy':'http://188.72.126.231:8085'});
 var async = require('async');
+var _ = require('lodash');
 
 var QUERY_PATH_BASE = 'http://reiseauskunft.insa.de/bin/query.exe/dny?performLocating=2&tpl=stop2json&look_maxno=20';
 var QUERY_JOURNEYS_PATH_BASE = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=0000011111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=30';
@@ -70,7 +71,7 @@ var getJourneyRequestCallback = function(name, callback) {
 
       // return if no journeys are present
       if( !bodyJSON.hasOwnProperty('journey') ) {
-        callback(null, times);
+        callback();
 
       } else {
         var journeys = bodyJSON.journey;
@@ -192,6 +193,7 @@ var getRequestCallback = function(callback){
             getJourneys,
             // results saved here
             function(err, times){
+              _.pull(times, undefined);
               callback(null, times);
             });
         } catch (e) {
