@@ -12,14 +12,7 @@ before(function () {
 
 var validRequestString = 'http://localhost:3000/?long=11.6289&lat=52.1308';
 
-describe.only('----Test main function----', function () {
-
-	it('should return 200 when called with valid coordinates', function (done) {
-	  http.get(validRequestString, function (res) {
-	    assert.equal(res.statusCode, 200);
-	    done();
-	  });
-	});
+describe('----Test main function----', function () {
 
 	it('get_departure_times should return object with valid station information', function (done) {
 	  http.get(validRequestString, function (res) {
