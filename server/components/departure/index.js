@@ -9,7 +9,6 @@ var refactory = function(longitude, latitude) {
 
 
 module.exports = {
-  //getDepartureTimes: getDepartureTimes,
   refactory: refactory
 };
 
