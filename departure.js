@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-var request = require('request').defaults({'proxy':'http://188.72.126.231:8085'});
+var request = require('request');
 var async = require('async');
 var _ = require('lodash');
 
