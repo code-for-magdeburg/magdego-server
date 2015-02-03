@@ -20,7 +20,7 @@
     "mocha": "^2.1.0"
   },
   "scripts": {
-    "test": "mocha test",
+    "test": "node mocha.runner",
     "start": "node app"
   }
 }
