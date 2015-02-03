@@ -4,8 +4,7 @@ var _ = require('lodash');
 var InsaAdapter = require('../../adapters/insaAdapter');
 
 var refactory = function(longitude, latitude) {
-  InsaAdapter.requestStations(longitude, latitude)
-    .then(console.log);
+  InsaAdapter.requestStations(longitude, latitude);
 }
 
 
