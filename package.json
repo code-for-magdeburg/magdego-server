@@ -19,10 +19,12 @@
   "devDependencies": {
     "chai": "^1.10.0",
     "glob": "^4.3.5",
-    "mocha": "^2.1.0"
+    "mocha": "^2.1.0",
+    "node-inspector": "^0.8.3"
   },
   "scripts": {
     "test": "node mocha.runner",
     "start": "node app"
+    "inspector": "node-debug app"
   }
 }
