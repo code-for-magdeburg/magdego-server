@@ -33,9 +33,7 @@ var decodeHtmlEntity = function(str) {
 var parseHtmlBodyToJSON = function(body) {
   var bodyString = body.toString('utf-8');
   var bodyStringDecoded = decodeHtmlEntity(bodyString).replace('journeysObj = ','');
-  var test = JSON.parse(bodyStringDecoded);
-  console.log(1, test);
-  return test;
+  return JSON.parse(bodyStringDecoded);
 };
 
 
