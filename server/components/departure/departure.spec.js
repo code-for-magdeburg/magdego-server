@@ -26,4 +26,10 @@ describe('----Test main function----', function () {
 	    })
 	});
 
+	it.only('refactory', function (done) {
+		this.timeout(3000);
+		Departure.refactory('11.6289', '52.1308');
+	    done();
+	});
+
 });

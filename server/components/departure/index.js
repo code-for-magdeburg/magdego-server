@@ -17,12 +17,30 @@ limitations under the License.
 var request = require('request');
 var async = require('async');
 var _ = require('lodash');
-
-var QUERY_PATH_BASE = 'http://reiseauskunft.insa.de/bin/query.exe/dny?performLocating=2&tpl=stop2json&look_maxno=20';
-var QUERY_JOURNEYS_PATH_BASE = 'http://reiseauskunft.insa.de/bin/stboard.exe/dn?L=.vs_stb&L=.vs_stb.vs_stb&boardType=dep&selectDate=today&productsFilter=0000011111&additionalTime=0&start=yes&requestType=0&outputMode=undefined&maxJourneys=30';
+var InsaAdapter = require('../../adapters/insaAdapter');
 
 
-var decodeHtmlEntity = function(str) {
+var getQueryPath = function(longitude, latitude) {
+  var formattedLongitude = getFormatedCoordinate(longitude);
+  var formattedLatitude = getFormatedCoordinate(latitude);
+
+  return QUERY_PATH_BASE + '&look_x=' + formattedLongitude + '&look_y=' + formattedLatitude;
+};
+
+var refactory = function(longitude, latitude) {
+  InsaAdapter.stationRequest(function(err, resp, body) {
+    console.log(JSON.parse(body));
+  });
+}
+
+
+module.exports = {
+  //getDepartureTimes: getDepartureTimes,
+  refactory: refactory
+};
+
+
+/*var decodeHtmlEntity = function(str) {
   return str.replace(/&#(\d+);/g, function(match, dec) {
     return String.fromCharCode(dec);
   });
@@ -217,9 +235,4 @@ var getDepartureTimes = function (long, lat, callback) {
 
   //TODO refactor callbacks. Maybe Q Library?
   request(path, {encoding: null}, getRequestCallback(callback));
-};
-
-
-module.exports = {
-  getDepartureTimes: getDepartureTimes
-};
+};*/
