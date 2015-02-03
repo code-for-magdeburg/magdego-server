@@ -28,7 +28,7 @@ module.exports = function(router) {
   });
 
   router.get('/departure-time/location/:long/:lat', cors(), function (req, res) {
-    departure.get_departure_times(req.params.long, req.params.lat, function (err, result) {
+    departure.getDepartureTimes(req.params.long, req.params.lat, function (err, result) {
       if (err) {
         res.status(500).json({error: "coudn't get departure times"});
         res.end();

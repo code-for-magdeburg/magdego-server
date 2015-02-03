@@ -221,5 +221,5 @@ var getDepartureTimes = function (long, lat, callback) {
 
 
 module.exports = {
-  get_departure_times: getDepartureTimes
+  getDepartureTimes: getDepartureTimes
 };

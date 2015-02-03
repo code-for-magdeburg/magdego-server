@@ -4,9 +4,9 @@ var _ = require('lodash');
 
 describe('----Test main function----', function () {
 
-	it('get_departure_times should return object with valid station information', function (done) {
+	it('getDepartureTimes should return object with valid station information', function (done) {
 		this.timeout(3000);
-	    Departure.get_departure_times('11.6289', '52.1308', function(err, res) {
+	    Departure.getDepartureTimes('11.6289', '52.1308', function(err, res) {
 	    	if(err){
 	    		done(err);
 	    	}
