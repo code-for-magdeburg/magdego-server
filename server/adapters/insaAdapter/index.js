@@ -23,9 +23,25 @@ var getStaionsQueryPath = function(longitude, latitude) {
 };
 
 
+var decodeHtmlEntity = function(str) {
+  return str.replace(/&#(\d+);/g, function(match, dec) {
+    return String.fromCharCode(dec);
+  });
+};
+
+
+var parseHtmlBodyToJSON = function(body) {
+  var bodyString = body.toString('utf-8');
+  var bodyStringDecoded = decodeHtmlEntity(bodyString).replace('journeysObj = ','');
+  var test = JSON.parse(bodyStringDecoded);
+  console.log(1, test);
+  return test;
+};
+
+
 var getJourneysQueryPath = function(stationID) {
   var currentDate = new Date();
-  var formattedDate = current_date.getHours() + ':' + current_date.getMinutes();
+  var formattedDate = currentDate.getHours() + ':' + currentDate.getMinutes();
 
   return QUERY_JOURNEYS_PATH_BASE + '&input='+ stationID + '&time=' + formattedDate;
 };
@@ -38,8 +54,7 @@ var sendRequest = function(path) {
 		if(err){
 			deffered.reject(err);
 		} else {
-			var stations = JSON.parse(body).stops;
-			deffered.resolve(stations);
+			deffered.resolve(body);
 		}
 	});
 
@@ -47,18 +62,19 @@ var sendRequest = function(path) {
 }
 
 
-var requestJourneys = function(longitude, latitude) {
-	var queryPath = getJourneysQueryPath(longitude, latitude);
-	return sendRequest(queryPath);
+var requestJourneys = function(stationID) {
+	var queryPath = getJourneysQueryPath(stationID);
+	return sendRequest(queryPath).then(parseHtmlBodyToJSON);
 };
 
 
 var requestStations = function(longitude, latitude) {
 	var queryPath = getStaionsQueryPath(longitude, latitude);
-	return sendRequest(queryPath);
+	return sendRequest(queryPath).then(JSON.parse);
 };
 
 
 module.exports = {
-	requestStations: requestStations
+	requestStations: requestStations,
+	requestJourneys: requestJourneys
 }
