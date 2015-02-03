@@ -24,7 +24,7 @@
   },
   "scripts": {
     "test": "node mocha.runner",
-    "start": "node app"
+    "start": "node app",
     "inspector": "node-debug app"
   }
 }
