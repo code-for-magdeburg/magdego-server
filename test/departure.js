@@ -1,5 +1,5 @@
 var app = require('../app');
-var Departure = require('../departure');
+var Departure = require('../server/components/departure');
 var http = require('http');
 var assert = require('assert');
 var should = require('chai').should();

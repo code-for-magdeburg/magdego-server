@@ -1,6 +1,6 @@
 
 var cors = require('cors');
-var departure = require('./departure');
+var departure = require('./server/components/departure');
 
 module.exports = function(router) {
 
