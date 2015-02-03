@@ -1,26 +1,19 @@
-var Mocha = require('mocha'),
-    fs = require('fs'),
-    path = require('path');
+var Mocha = require('mocha');
+var fs = require('fs');
+var path = require('path');
+var glob = require('glob');
 
-// First, you need to instantiate a Mocha instance.
+
 var mocha = new Mocha;
-// Then, you need to use the method "addFile" on the mocha
-// object for each file.
 
-// Here is an example:
-fs.readdirSync('server/components/departure').filter(function(file){
-    // Only keep the .js files
-    return file.substr(-8) === '.spec.js';
+var files = glob.sync('server/**/*.spec.js');
 
-}).forEach(function(file){
-    // Use the method "addFile" to add the file to mocha
-    console.log(path.join('server/components/departure', file));
+files.forEach(function(file){
     mocha.addFile(
-        path.join('server/components/departure', file)
+        path.join(file)
     );
 });
 
-// Now, you can run the tests.
 mocha.run(function(failures){
   process.on('exit', function () {
     process.exit(failures);

@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "chai": "^1.10.0",
+    "glob": "^4.3.5",
     "mocha": "^2.1.0"
   },
   "scripts": {
