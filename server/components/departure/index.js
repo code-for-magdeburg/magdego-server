@@ -3,217 +3,80 @@ var async = require('async');
 var _ = require('lodash');
 var InsaAdapter = require('../../adapters/insaAdapter');
 
-var refactory = function(longitude, latitude) {
-  InsaAdapter.requestStations(longitude, latitude);
+
+var timeTables;
+
+
+//station names have format 'City, Station'. We only need Station.
+var getFormattedStationName = function(stationName) {
+  var indexKomma = stationName.indexOf(',');
+  if(indexKomma === -1) indexKomma = -2;
+  return stationName.slice(indexKomma + 2, stationName.length);
+};
+
+
+var retrieveJourneyInformation = function(res) {
+  if( !res.hasOwnProperty('journey') ) {
+    return;
+  }
+
+  var timeTable = [];
+
+  _.forEach(res.journey, function(journey) {
+    if(!_.isUndefined(journey.rt.dlt)) journey.da = journey.rt.dlt; 
+    var date = journey.da.split('.').reverse();
+    date[0] = '20' + date[0];
+    if(date.length !== 3) date = [new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()];
+    console.log(date);
+    timeTableEntry = {
+      line: journey.pr,
+      departure: new Date(date + ' ' + journey.ti).toJSON(),
+      direction: getFormattedStationName(journey.st)
+    }
+    if(journey.rt !== false) timeTableEntry.delay = {};
+    if(!_.isUndefined(journey.rt.dlm)) timeTableEntry.delay.minutes = journey.rt.dlm; 
+    if(!_.isUndefined(journey.rt.status)) timeTableEntry.delay.status = journey.rt.status; 
+    timeTable.push(timeTableEntry);
+
+    if(timeTableEntry.departure === null) console.log(timeTableEntry.departure);
+  });
+  return timeTable;
+
+}
+
+
+var getJourneys = function(station) {
+  return  InsaAdapter.requestJourneys(station.extId)
+          .then(retrieveJourneyInformation)
+}
+
+
+var createTimeTables = function(stationData) {
+  var promiseArray = [];
+  timeTables = _.map(stationData.stops, function(station) {
+    var timeTable = {};
+    timeTable.station_info = getFormattedStationName(station.name);
+    var journeyPromise = getJourneys(station);
+    journeyPromise.then(function(val) {
+      timeTable.departure_times = val;
+    })
+    promiseArray.push(journeyPromise);
+    return timeTable;
+  });
+
+  return promiseArray;
+}
+
+
+var getTimetables = function(longitude, latitude) {
+  return  InsaAdapter.requestStations(longitude, latitude)
+          .then(createTimeTables).all()
+          .then(function(arguments) {
+            return timeTables;
+          })
 }
 
 
 module.exports = {
-  refactory: refactory
+  getTimetables: getTimetables
 };
-
-
-
-//station names have format 'City, Station'. We only need Station.
-/*var getFormattedStationName = function(station) {
-  var stationName = station.name;
-  var indexKomma = stationName.indexOf(',');
-  return stationName.slice(indexKomma + 2, stationName.length);
-};*/
-
-/*var decodeHtmlEntity = function(str) {
-  return str.replace(/&#(\d+);/g, function(match, dec) {
-    return String.fromCharCode(dec);
-  });
-};
-
-
-var removeCityNames = function(str) {
-  return str.replace('Magdeburg, ','').replace('Halle (Saale), ', '').replace('Leipzig, ','');
-};
-
-
-var parseHtmlBodyToJSON = function(body) {
-  var bodyString = body.toString('utf-8');
-  var bodyStringDecoded = decodeHtmlEntity(bodyString).replace('journeysObj = ','');
-
-  return JSON.parse(bodyStringDecoded);
-};
-
-
-var getDateFromInsaDate = function(insaDate) {
-  var currentDate = new Date();
-  var departureDate = new Date();
-  var splittedDateInput = insaDate.split(':');
-
-  departureDate.setMinutes(parseInt(splittedDateInput[1]));
-  departureDate.setHours(parseInt(splittedDateInput[0]));
-
-  if ( departureDate < currentDate ) {
-    departureDate.setDate(departureDate.getDate() + 1); // increment by one day
-  }
-
-  return departureDate;
-};
-
-
-//TODO refactor
-var getJourneyRequestCallback = function(name, callback) {
-  return function (err, resp, body) {
-    if (err) {
-      callback(err, null);
-
-    } else {
-
-      var bodyJSON = parseHtmlBodyToJSON(body);
-      var times = [];
-
-      // return if no journeys are present
-      if( !bodyJSON.hasOwnProperty('journey') ) {
-        callback();
-
-      } else {
-        var journeys = bodyJSON.journey;
-
-        for ( i = 0; i < journeys.length; i++ ) {
-          var curRow = journeys[i];
-
-          // taking care of wrongly inserted journeys
-          if ( curRow.pr !== "" && curRow.st !== "" && curRow.ti !== "" ) {
-
-            // INSA format of Date
-            var insaDate = curRow.ti;
-
-            var obj = {
-              "line": curRow.pr,
-              "direction": removeCityNames(curRow.st),
-            };
-
-            //FIX Confusing use of '!'.
-            if (! curRow.rt === false) {
-              obj['delay'] = {};
-
-              if ( curRow.rt.dlm != null) {
-                obj['delay']['minutes'] = curRow.rt.dlm;
-              }
-
-              if ( curRow.rt.status != null) {
-                obj['delay']['status'] = curRow.rt.status;
-              }
-
-              // override original departure
-              if ( curRow.rt.dlt != null) {
-                insaDate = curRow.rt.dlt;
-              }
-            }
-
-            var departureDate = getDateFromInsaDate(insaDate);
-            obj['departure'] = departureDate.toJSON();
-            times.push( obj );
-          }
-        }
-
-        // Sorting because INSA don't provide it sorted
-        // Compare on Dates
-        times.sort(function(a, b) {
-          return a.departure.localeCompare(b.departure);
-        });
-
-        callback(null, { station_info: name, departure_times: times });
-      }
-    }
-  };
-};
-
-
-var getJourneyQueryPath = function(stationID) {
-  var current_date = new Date();
-  var string_date = current_date.getHours() + ':' + current_date.getMinutes();
-
-  return QUERY_JOURNEYS_PATH_BASE + '&input='+ stationID + '&time=' + string_date;
-};
-
-
-// get journeys of one station
-// productFilter= masking out ICE/IC/RE/RB/S/U
-var getJourneys = function (station, callback) {
-  var name = removeCityNames(station.name);
-  var path = getJourneyQueryPath(station.id);
-
-  //TODO refactor callbacks. Maybe Q Library?
-  request(path, {encoding: null}, getJourneyRequestCallback(name, callback));
-};
-
-
-var getFormatedCoordinate = function(coordinate) {
-  // The geolocations are requiered in a specific format
-  // without points and only 8 digits
-  var formattedCoordinate = coordinate.replace('.', '');
-
-  while ( formattedCoordinate.length < 8 ) {
-    formattedCoordinate += '0';
-  }
-
-  formattedCoordinate = formattedCoordinate.substring(0, 8);
-
-  return formattedCoordinate;
-};
-
-
-// Filter out stations for IC/RB/RE/S-Bahn/U-Bahn
-var getFilteredStations = function(stations) {
-  var stationsWithId = [];
-
-  for(i = 0; i < stations.length; i++) {
-    if ( parseInt(stations[i].prodclass) > 31 ) {
-      stationsWithId.push( {id: stations[i].extId, name: stations[i].name} );
-    }
-  }
-
-  return stationsWithId;
-};
-
-
-var getRequestCallback = function(callback){
-  return function (err, resp, body) {
-
-      if (err) {
-        callback(err, null);
-
-      } else {
-        try {
-          var bodyJSON = JSON.parse(body);
-          var stations = bodyJSON.stops;
-          var stationsWithId = getFilteredStations(stations);
-
-          // look for journeys of each stations
-          async.map ( stationsWithId,
-            // for each id
-            getJourneys,
-            // results saved here
-            function(err, times){
-              _.pull(times, undefined);
-              callback(null, times);
-            });
-        } catch (e) {
-          callback(err, []); // return empty error
-        }
-      }
-  };
-};
-
-
-var getQueryPath = function(longitude, latitude) {
-  var formattedLongitude = getFormatedCoordinate(longitude);
-  var formattedLatitude = getFormatedCoordinate(latitude);
-
-  return QUERY_PATH_BASE + '&look_x=' + formattedLongitude + '&look_y=' + formattedLatitude;
-};
-
-
-var getDepartureTimes = function (long, lat, callback) {
-  var path = getQueryPath(long, lat);
-
-  //TODO refactor callbacks. Maybe Q Library?
-  request(path, {encoding: null}, getRequestCallback(callback));
-};*/

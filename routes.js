@@ -28,14 +28,14 @@ module.exports = function(router) {
   });
 
   router.get('/departure-time/location/:long/:lat', cors(), function (req, res) {
-    departure.getDepartureTimes(req.params.long, req.params.lat, function (err, result) {
-      if (err) {
-        res.status(500).json({error: "coudn't get departure times"});
-        res.end();
-      } else {
+    departure.getTimetables(req.params.long, req.params.lat)
+      .then(function(result) {
         res.json(result);
         res.end();
-      }
-    });
+      })
+      .fail(function(err) {
+        res.status(500).json({error: "coudn't get departure times"});
+        res.end();
+      });
   });
 };

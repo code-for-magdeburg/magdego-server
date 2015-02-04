@@ -4,10 +4,14 @@ var _ = require('lodash');
 
 describe('----Test main function----', function () {
 
-	it('refactory', function (done) {
+	it('getTimetables', function (done) {
 		this.timeout(3000);
-		Departure.refactory('11.6289', '52.1308');
-	    done();
+		Departure.getTimetables('11.6289', '52.1308')
+			.then(function(stuff) {
+				console.log(stuff[0]);
+				done();
+			})
+			.fail(done);
 	});
 
 });
