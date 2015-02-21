@@ -86,7 +86,7 @@ var getJourneyRequestCallback = function(name, callback) {
             var insaDate = curRow.ti;
 
             var obj = {
-              "line": curRow.pr,
+              "line": curRow.pr.replace(/\s+/g, ' '),
               "direction": removeCityNames(curRow.st),
             };
 
