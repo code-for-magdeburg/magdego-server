@@ -23,6 +23,7 @@ var development = {
 var production = {
 
   port: 62640,
+  portHttps: 62641,
 
   env : global.process.env.NODE_ENV || 'production'
 };
