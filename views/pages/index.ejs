@@ -71,7 +71,7 @@
         } else {
           var content = 'Dein Browser unterstütz keine Geolocation. Bitte update/wechsel dein Browser/Betriebssystem.';
         }
-        $( 'body' ).text( content );
+        $( 'body' ).html( content );
       }
 
       function fillContent(data, textStatus, jqXHR) {
