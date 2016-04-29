@@ -51,14 +51,14 @@ var serverHttps = https.createServer(options, app);
 
 
 var boot = function (port, httpsPort) {
-  server.listen(port);
-  serverHttps.listen(httpsPort);
+  // server.listen(port);
+  serverHttps.listen(port);
 
 };
 
 var shutdown = function () {
   server.close();
-  httpsServer.close();
+  serverHttps.close();
 };
 
 if (require.main === module) {
