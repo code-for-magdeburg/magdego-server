@@ -51,7 +51,7 @@ var serverHttps = https.createServer(options, app);
 
 
 var boot = function (port, httpsPort) {
-  // server.listen(port);
+  server.listen(port);
   serverHttps.listen(port);
 
 };
