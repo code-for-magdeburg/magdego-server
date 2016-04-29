@@ -37,7 +37,7 @@ app.use(express.static(__dirname + '/public'));
 var fs = require('fs');
 
 var hskey = fs.readFileSync('../.config/letsencrypt/live/api.magdego.de/privkey.pem', 'utf8');
-var hscert = fs.readFileSync('../.config/letsencrypt/live/api.magdego.de/privkey.pem', 'utf8');
+var hscert = fs.readFileSync('../.config/letsencrypt/live/api.magdego.de/cert.pem', 'utf8');
 
 var options = {
     key: hskey,
