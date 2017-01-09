@@ -36,29 +36,37 @@ app.use(express.static(__dirname + '/public'));
 
 var fs = require('fs');
 
-var hskey = fs.readFileSync('../.config/letsencrypt/live/api.magdego.de/privkey.pem', 'utf8');
-var hscert = fs.readFileSync('../.config/letsencrypt/live/api.magdego.de/cert.pem', 'utf8');
+const isProduction = global.process.env.NODE_ENV === 'production';
 
-var options = {
-    key: hskey,
-    cert: hscert
-};
+if (isProduction) {
+  var hskey = fs.readFileSync('../.config/letsencrypt/live/api.magdego.de/privkey.pem', 'utf8');
+  var hscert = fs.readFileSync('../.config/letsencrypt/live/api.magdego.de/cert.pem', 'utf8');
+  var options = {
+      key: hskey,
+      cert: hscert
+  };
+}
 
 
 // module interface
 var server = http.createServer(app);
-var serverHttps = https.createServer(options, app);
+if (isProduction) {
+  var serverHttps = https.createServer(options, app);
+}
 
 
 var boot = function (port, httpsPort) {
   server.listen(port);
-  serverHttps.listen(httpsPort);
-
+  if (isProduction) {
+    serverHttps.listen(httpsPort);
+  }
 };
 
 var shutdown = function () {
   server.close();
-  serverHttps.close();
+  if (isProduction) {
+    serverHttps.close();
+  }
 };
 
 if (require.main === module) {

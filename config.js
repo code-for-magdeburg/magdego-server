@@ -16,6 +16,7 @@ limitations under the License.
 
 var development = {
   port: 3000,
+  portHttps: 1337, //dummy
 
   env : global.process.env.NODE_ENV || 'development'
 };

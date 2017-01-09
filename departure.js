@@ -36,6 +36,7 @@ var removeCityNames = function(str) {
 
 var parseHtmlBodyToJSON = function(body) {
   var bodyString = body.toString('utf-8');
+  console.log(bodyString);
   var bodyStringDecoded = decodeHtmlEntity(bodyString).replace('journeysObj = ','');
 
   return JSON.parse(bodyStringDecoded);
